@@ -1,0 +1,3302 @@
+<!DOCTYPE html>
+<!--
+  ╔════════════════════════════════════════════════════════════════════╗
+  ║  LERNPLAN-GENERATOR                                                ║
+  ║                                                                    ║
+  ║  Alles steckt in dieser einen Datei – keine Internetverbindung,    ║
+  ║  keine externen Bibliotheken, keine Sound-Dateien nötig.           ║
+  ║                                                                    ║
+  ║  Aufbau dieser Datei:                                              ║
+  ║    1. <style>   → das AUSSEHEN (Farben, Größen, Animationen)       ║
+  ║    2. <body>    → der INHALT (Einstellungs-Modus + Video-Modus)    ║
+  ║    3. <script>  → das VERHALTEN (Speichern, Sounds, Animation)     ║
+  ║                                                                    ║
+  ║  Öffnen: Datei doppelt anklicken → sie öffnet sich im Browser.     ║
+  ╚════════════════════════════════════════════════════════════════════╝
+-->
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Diese Zeilen sorgen dafür, dass die Seite auf iPhone/iPad als
+     „App" ohne Safari-Leisten läuft, wenn man sie zum Home-Bildschirm hinzufügt. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lernplan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F3EEE6" id="metaTheme">
+<title>Lernplan-Generator</title>
+
+<style>
+/* =====================================================================
+   1) GRUNDEINSTELLUNGEN & FARBEN
+   ===================================================================== */
+/* Layout: eine schmale, mittige Spalte mit aufklappbaren Karten;
+   unten fest der große Knopf „Zum Video-Modus". */
+:root {
+  /* Farben für den EINSTELLUNGS-Modus (die Farben im Video-Modus
+     stehen weiter unten im JavaScript bei „THEMES") */
+  --s-bg: #F3EEE6;          /* Seitenhintergrund */
+  --s-card: #FFFDF9;        /* Karten */
+  --s-surface: #FFFFFF;     /* Knöpfe & innere Karten */
+  --s-input: #FFFFFF;       /* Eingabefelder */
+  --s-text: #3A2A23;        /* Haupttext */
+  --s-muted: #85736A;       /* grauer Hilfstext */
+  --s-line: #E7DDD0;        /* Linien & Rahmen */
+  --s-line-strong: #D6C0AF; /* Rahmen einer aufgeklappten Kategorie */
+  --s-accent: #7A3E2E;      /* Akzentfarbe (Braun-Rot) */
+  --s-accent-soft: #F3E6DC; /* heller Akzent */
+  --s-on-accent: #FFFFFF;   /* Schrift auf Akzentfarbe */
+  --s-danger: #B0402C;      /* Löschen / Warnung */
+  --s-danger-line: #EBCBC2;
+  --s-switch-off: #D9CFC3;  /* ausgeschalteter Schalter */
+  --s-knob: #FFFFFF;        /* Kreis im Schalter */
+  --s-seg-on: #FFFFFF;      /* gewählte Segment-Taste */
+  --s-shadow: rgba(60, 30, 20, 0.16);
+  --s-accent-shadow: rgba(122, 62, 46, 0.28);
+  --s-toast-bg: #3A2A23;
+  --s-toast-fg: #FFFFFF;
+  --s-overlay: rgba(40, 25, 18, 0.45);
+  --s-radius: 16px;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  /* Abstand zu Notch & Home-Leiste (iPhone) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+/* Dunkle Variante der Einstellungen (folgt dem Dunkelmodus des Geräts) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --s-bg: #18120F; --s-card: #221A16; --s-surface: #2A201C; --s-input: #2A201C;
+    --s-text: #F2E6DC; --s-muted: #A9978C; --s-line: #3A2D27; --s-line-strong: #5A443A;
+    --s-accent: #E3A487; --s-accent-soft: #3A2720; --s-on-accent: #23140E;
+    --s-danger: #F08C75; --s-danger-line: #5C2F26; --s-switch-off: #4A3C35; --s-knob: #FFFFFF;
+    --s-seg-on: #4A372F; --s-shadow: rgba(0, 0, 0, 0.45); --s-accent-shadow: rgba(0, 0, 0, 0.5);
+    --s-toast-bg: #F2E6DC; --s-toast-fg: #221A16; --s-overlay: rgba(0, 0, 0, 0.6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --s-bg: #18120F; --s-card: #221A16; --s-surface: #2A201C; --s-input: #2A201C;
+  --s-text: #F2E6DC; --s-muted: #A9978C; --s-line: #3A2D27; --s-line-strong: #5A443A;
+  --s-accent: #E3A487; --s-accent-soft: #3A2720; --s-on-accent: #23140E;
+  --s-danger: #F08C75; --s-danger-line: #5C2F26; --s-switch-off: #4A3C35; --s-knob: #FFFFFF;
+  --s-seg-on: #4A372F; --s-shadow: rgba(0, 0, 0, 0.45); --s-accent-shadow: rgba(0, 0, 0, 0.5);
+  --s-toast-bg: #F2E6DC; --s-toast-fg: #221A16; --s-overlay: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+html { background: var(--s-bg); }
+body {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  background: var(--s-bg);
+  color: var(--s-text);
+  line-height: 1.4;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--s-accent);
+  outline-offset: 2px;
+}
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .chev, .switch, .switch::after, .toast, .btn { transition: none !important; }
+}
+
+/* Wenn der Video-Modus aktiv ist, darf nichts scrollen */
+html.in-video, html.in-video body {
+  overflow: hidden;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+/* =====================================================================
+   2) EINSTELLUNGS-MODUS
+   ===================================================================== */
+.s-wrap {
+  max-width: 712px;
+  margin: 0 auto;
+  padding-block: 22px 120px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.sync-note { margin: 6px 0 0; font-size: 13px; color: var(--s-muted); }
+.s-header-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.s-logo { min-width: 0; text-wrap: balance; }
+.lang-seg { flex: none; }
+.lang-seg button { min-width: 48px; min-height: 40px; padding: 4px 10px; font-size: 14px; }
+@media (max-width: 420px) { .s-logo { font-size: 26px; } }
+.s-header { margin-bottom: 18px; }
+.s-logo {
+  font-size: 30px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: var(--s-accent);
+}
+.s-header p { margin: 4px 0 0; color: var(--s-muted); font-size: 15px; }
+
+/* --- Aufklappbare Karten (Bereiche) --- */
+.card {
+  background: var(--s-card);
+  border: 1px solid var(--s-line);
+  border-radius: var(--s-radius);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.card > summary {
+  list-style: none;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.card > summary::-webkit-details-marker { display: none; }
+.sum-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 14px 18px;
+  font-size: 18px;
+  font-weight: 650;
+}
+.sum-sub {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 450;
+  color: var(--s-muted);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 55%;
+}
+.chev {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--s-muted);
+  border-bottom: 2px solid var(--s-muted);
+  transform: rotate(45deg);
+  margin: -4px 2px 0 4px;
+  transition: transform .2s;
+}
+.card[open] > summary .chev { transform: rotate(-135deg); margin-top: 4px; }
+.card-body { padding: 2px 18px 20px; border-top: 1px solid var(--s-line); }
+
+/* --- Eingabefelder --- */
+.field { display: block; margin-top: 18px; }
+.field > span, .field-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--s-muted);
+  margin-bottom: 7px;
+}
+.field small, .switch-row small { font-weight: 400; color: var(--s-muted); }
+input[type="text"], select {
+  width: 100%;
+  min-height: 50px;
+  padding: 10px 14px;
+  font-size: 17px; /* mind. 16px → iPhone zoomt beim Tippen nicht rein */
+  border: 1.5px solid var(--s-line);
+  border-radius: 12px;
+  background: var(--s-input);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+select {
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%2385736A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+select:disabled { opacity: .5; }
+input[type="text"]:focus, select:focus {
+  border-color: var(--s-accent);
+  box-shadow: 0 0 0 3px var(--s-accent-soft);
+}
+input[type="range"] {
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  accent-color: var(--s-accent);
+}
+output { font-weight: 700; color: var(--s-accent); }
+.hint { font-size: 14px; color: var(--s-muted); margin: 10px 0 0; }
+
+/* --- Schalter (An/Aus) im iOS-Stil --- */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 58px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--s-line);
+  font-size: 17px;
+  cursor: pointer;
+}
+.switch-row > span { display: flex; flex-direction: column; }
+.switch-row small { font-size: 13px; margin-top: 2px; }
+.switch {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: none;
+  position: relative;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--s-switch-off);
+  cursor: pointer;
+  transition: background .2s;
+}
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--s-knob);
+  box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: transform .2s;
+}
+.switch:checked { background: var(--s-accent); }
+.switch:checked::after { transform: translateX(20px); }
+
+/* --- Segment-Auswahl (z. B. klein / mittel / groß) --- */
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  background: var(--s-accent-soft);
+}
+.seg button {
+  flex: 1;
+  min-height: 44px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--s-accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+.seg button.on { background: var(--s-seg-on); box-shadow: 0 1px 4px var(--s-shadow); }
+
+/* Farbschema-Auswahl */
+.swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.swatches button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 2px solid var(--s-line);
+  border-radius: 14px;
+  background: var(--s-surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+.swatches button.on { border-color: var(--s-accent); box-shadow: 0 0 0 3px var(--s-accent-soft); }
+.swatch-dot {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 17px;
+  border: 1px solid var(--s-line);
+}
+
+/* --- Knöpfe --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--s-line);
+  border-radius: 12px;
+  background: var(--s-surface);
+  font-size: 16px;
+  font-weight: 600;
+}
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .45; }
+.btn.primary { background: var(--s-accent); border-color: var(--s-accent); color: var(--s-on-accent); }
+.btn.danger { color: var(--s-danger); border-color: var(--s-danger-line); }
+.btn.danger-fill { background: var(--s-danger); border-color: var(--s-danger); color: var(--s-on-accent); }
+.btn.ghost {
+  width: 100%;
+  margin-top: 12px;
+  border-style: dashed;
+  background: transparent;
+  color: var(--s-accent);
+}
+.btn.wide { width: 100%; }
+.btn svg { flex: none; }
+.icon-btn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1.5px solid var(--s-line);
+  border-radius: 12px;
+  background: var(--s-surface);
+  color: var(--s-text);
+}
+.icon-btn:disabled { opacity: .3; }
+.icon-btn.danger { color: var(--s-danger); }
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--s-accent);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.btn-link.danger { color: var(--s-danger); }
+.inline { display: flex; gap: 8px; margin-top: 14px; }
+.inline input { flex: 1; min-width: 0; }
+
+/* --- Kategorien --- */
+.cat {
+  margin-top: 12px;
+  border: 1.5px solid var(--s-line);
+  border-radius: 14px;
+  background: var(--s-surface);
+}
+.cat.open { border-color: var(--s-line-strong); }
+.cat-head { display: flex; align-items: center; gap: 5px; padding: 6px 6px 6px 2px; }
+.cat-head .icon-btn { width: 38px; height: 38px; border-radius: 11px; }
+.cat-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 52px;
+  padding: 4px 4px 4px 6px;
+  border: 0;
+  background: none;
+  text-align: left;
+}
+.cat-num {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--s-accent-soft);
+  color: var(--s-accent);
+  font-size: 14px;
+  font-weight: 750;
+}
+.cat-titles { min-width: 0; display: flex; flex-direction: column; }
+.cat-title, .cat-meta {               /* höchstens 2 Zeilen, dann „…" */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.cat-title { font-size: 16px; font-weight: 650; line-height: 1.25; }
+.cat-meta { font-size: 13px; color: var(--s-muted); line-height: 1.3; margin-top: 2px; }
+.cat.open .cat-head { background: var(--s-accent-soft); border-radius: 12px 12px 0 0; }
+.cat-body { padding: 0 14px 16px; border-top: 1px solid var(--s-line); }
+@media (max-width: 420px) {           /* schmale Handys: etwas weniger Rand */
+  .card-body { padding-left: 12px; padding-right: 12px; }
+  .cat-body { padding-left: 12px; padding-right: 12px; }
+}
+.opt-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.opt-row input { flex: 1; min-width: 0; }
+.range-row {
+  display: grid;
+  grid-template-columns: 76px 1fr 54px;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 15px;
+}
+.range-row output { text-align: right; }
+
+/* Mini-Vorschau einer Zeile innerhalb der Kategorie */
+.cat-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 84px;
+  margin: 16px 0 10px;
+  padding: 10px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--v-bg);
+  color: var(--v-text);
+  font-family: var(--v-font);
+  font-size: clamp(22px, 7vw, 34px);
+  font-weight: 700;
+}
+.cat-preview .pv-empty { font-size: 15px; font-weight: 500; opacity: .6; font-family: var(--font-ui); }
+
+/* --- Presets --- */
+.preset-list { list-style: none; margin: 14px 0 0; padding: 0; }
+.preset-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-top: 1px solid var(--s-line);
+}
+.preset-name { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.preset-name b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.preset-name small { color: var(--s-muted); font-size: 13px; }
+.preset-list .btn { min-height: 42px; padding: 8px 12px; font-size: 15px; }
+.active-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--s-accent-soft);
+  color: var(--s-accent);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: 1px;
+}
+
+/* --- Sound --- */
+.sound-row { padding: 14px 0; border-bottom: 1px solid var(--s-line); }
+.sound-row:last-child { border-bottom: 0; }
+.sound-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.sound-head b { font-size: 17px; }
+.sound-head small { color: var(--s-muted); font-size: 13px; }
+.sound-ctrl { display: flex; gap: 8px; }
+.sound-ctrl select { flex: 1; min-width: 0; }
+.sound-custom { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 6px; }
+.custom-info { font-size: 14px; color: var(--s-text); }
+.is-muted { opacity: .5; }
+
+/* --- Anleitung --- */
+.prose { font-size: 15px; }
+.prose ol, .prose ul { padding-left: 22px; margin: 12px 0; }
+.prose li { margin: 6px 0; }
+.prose h4 { margin: 18px 0 4px; font-size: 15px; }
+
+/* --- Leiste ganz unten mit dem großen Knopf --- */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 14px) max(16px, env(safe-area-inset-left, 0px));
+  background: linear-gradient(to top, var(--s-bg) 65%, transparent);
+}
+.bottom-bar .btn {
+  width: 100%;
+  max-width: 648px;
+  min-height: 60px;
+  border-radius: 16px;
+  font-size: 19px;
+  box-shadow: 0 8px 22px var(--s-accent-shadow);
+}
+
+/* --- Kurze Meldungen („Gespeichert ✓") --- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 96px);
+  z-index: 300;
+  max-width: calc(100% - 32px);
+  padding: 11px 16px;
+  border-radius: 12px;
+  background: var(--s-toast-bg);
+  color: var(--s-toast-fg);
+  font-size: 15px;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+
+/* --- Eigenes Rückfrage-Fenster („Wirklich löschen?") --- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  place-items: center;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px));
+  background: var(--s-overlay);
+}
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  background: var(--s-card);
+  color: var(--s-text);
+  box-shadow: 0 20px 50px var(--s-shadow);
+}
+.modal-card p { margin: 0 0 18px; font-size: 17px; line-height: 1.45; white-space: pre-line; }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions .btn { flex: 1; }
+
+/* =====================================================================
+   3) VIDEO-MODUS
+   ===================================================================== */
+.video {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: var(--v-bg);
+  color: var(--v-text);
+  font-family: var(--v-font);
+  touch-action: manipulation;       /* kein Doppeltipp-Zoom */
+  -webkit-user-select: none;        /* kein Markieren von Text */
+  user-select: none;
+  -webkit-touch-callout: none;      /* kein Lupen-/Kopier-Menü */
+}
+
+/* Die „Bühne": Bereich, in dem der Text steht.
+   TikTok-sicher = etwas Abstand oben, mehr Abstand unten und rechts,
+   weil dort im fertigen Video die TikTok-Knöpfe liegen. */
+.stage {
+  position: absolute;
+  top: 13%;
+  bottom: 24%;
+  left: 9%;
+  right: 17%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video[data-pos="mitte"] .stage { top: 9%; bottom: 9%; left: 7%; right: 7%; }
+
+/* Spiegelverkehrt (für die Frontkamera / Talking-Head-Videos):
+   Der ganze Bildschirm wird waagerecht gespiegelt – Text, Knöpfe und
+   Safe-Zone. Auf dem Gerät steht alles spiegelverkehrt, im gespiegelten
+   Kamerabild dann wieder richtig herum und an der richtigen Stelle. */
+.video[data-mirror="1"] { transform: scaleX(-1); }
+
+.safe-frame {
+  position: absolute;
+  inset: 0;
+  border: 2px dashed currentColor;
+  border-radius: 14px;
+  opacity: .28;
+  pointer-events: none;
+}
+.block { width: 100%; text-align: center; }
+
+.v-title {
+  height: 1.3em;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: .6;
+}
+
+/* Eine Ergebnis-Zeile */
+.row {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(.12em);
+  transition: opacity .28s ease, transform .28s ease;
+}
+.row.shown { opacity: 1; transform: none; }
+.row-label {
+  height: 1.35em;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: .02em;
+  opacity: .55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.row-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.2em;
+  line-height: 1.2;
+}
+.row.big    { font-weight: 700; }  /* erste & letzte Zeile: groß und fett */
+.row.normal { font-weight: 500; }  /* Zeilen dazwischen: etwas kleiner */
+
+.row-text {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+  isolation: isolate;
+}
+.row-prefix {                       /* z. B. „Zielnote:" – kleiner als das Ergebnis */
+  font-size: .6em;
+  font-weight: 500;
+  white-space: pre;
+}
+.row-value { display: inline-block; }
+.rolling .row-value { opacity: .9; }
+
+/* Textmarker-Effekt beim Höhepunkt */
+.row-text::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -.14em;
+  right: -.14em;
+  bottom: .08em;
+  height: .46em;
+  border-radius: .2em .35em .25em .4em;
+  background: var(--v-marker);
+  transform: scaleX(0) rotate(-1deg);
+  transform-origin: 0 50%;
+  transition: transform .5s cubic-bezier(.65,.05,.35,1);
+}
+.marked .row-text::before { transform: scaleX(1) rotate(-1deg); }
+
+/* Kleine, dezente Knöpfe im Video-Modus */
+.gear {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: calc(env(safe-area-inset-right) + 8px);
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--v-text);
+  opacity: .25;
+}
+.gear:active { opacity: .6; }
+.corner-btn {
+  position: absolute;
+  right: calc(env(safe-area-inset-right) + 18px);
+  bottom: calc(env(safe-area-inset-bottom) + 22px);
+  z-index: 5;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--v-text);
+  font-family: var(--v-font);
+  font-size: 15px;
+  font-weight: 600;
+  opacity: .72;
+  transition: opacity .35s ease;
+}
+.corner-btn.gone { opacity: 0; pointer-events: none; }
+
+/* Unsichtbares Hilfselement zum Messen von Textbreiten */
+.measure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  font-size: 100px;
+  line-height: 1;
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================================
+     A) EINSTELLUNGS-MODUS
+     ===================================================================== -->
+<main id="settings" class="s-wrap">
+
+  <header class="s-header">
+    <div class="s-header-top">
+      <div class="s-logo" data-i18n="appName">Lernplan-Generator</div>
+      <!-- Sprachumschalter: Deutsch ist Standard -->
+      <div class="seg lang-seg" data-setting="lang" role="group" aria-label="Sprache / Language">
+        <button type="button" data-v="de">DE</button>
+        <button type="button" data-v="en">EN</button>
+      </div>
+    </div>
+    <p data-i18n="subtitle">Einstellungen · Änderungen werden automatisch gespeichert.</p>
+    <p class="sync-note" id="syncNote" hidden></p>
+  </header>
+
+  <!-- Kurzanleitung (Text steht im Wörterbuch unter „guideHtml") -->
+  <details class="card">
+    <summary><div class="sum-row"><span data-i18n="guideTitle">Kurzanleitung &amp; Tipps</span><span class="chev"></span></div></summary>
+    <div class="card-body prose" data-i18n-html="guideHtml"></div>
+  </details>
+
+  <!-- Presets -->
+  <details class="card" id="secPresets">
+    <summary><div class="sum-row"><span data-i18n="secPresets">Presets</span><span class="sum-sub" id="presetSum"></span><span class="chev"></span></div></summary>
+    <div class="card-body">
+      <p class="hint" id="presetActive"></p>
+      <div class="inline">
+        <input type="text" id="presetName" data-i18n-ph="presetPh" maxlength="60" enterkeyhint="done" autocomplete="off">
+        <button type="button" class="btn primary" id="presetSave" data-i18n="save">Speichern</button>
+      </div>
+      <ul class="preset-list" id="presetList"></ul>
+      <p class="hint" id="presetEmpty" data-i18n="presetEmpty"></p>
+    </div>
+  </details>
+
+  <!-- Kategorien -->
+  <details class="card" open>
+    <summary><div class="sum-row"><span data-i18n="secCats">Kategorien</span><span class="sum-sub" id="catSum"></span><span class="chev"></span></div></summary>
+    <div class="card-body">
+      <p class="hint" data-i18n-html="catHintHtml"></p>
+      <div id="catList"></div>
+      <button type="button" class="btn ghost" id="addCat" data-i18n="addCat">+ Kategorie hinzufügen</button>
+    </div>
+  </details>
+
+  <!-- Ablauf -->
+  <details class="card">
+    <summary><div class="sum-row"><span data-i18n="secFlow">Ablauf</span><span class="sum-sub" id="flowSum"></span><span class="chev"></span></div></summary>
+    <div class="card-body">
+      <div class="field">
+        <span class="field-label" data-i18n="nextRow">Nächste Zeile …</span>
+        <div class="seg" data-setting="advanceMode">
+          <button type="button" data-v="auto" data-i18n="auto">automatisch</button>
+          <button type="button" data-v="tap" data-i18n="tap">per Tippen</button>
+        </div>
+        <p class="hint" data-show-if="advanceMode=tap" data-i18n="tapHint"></p>
+      </div>
+      <label class="field" data-show-if="advanceMode=auto">
+        <span><span data-i18n="pauseLabel">Pause zwischen den Zeilen:</span> <output data-out="pause"></output></span>
+        <input type="range" min="0" max="3" step="0.1" data-setting="pause">
+      </label>
+      <div class="field">
+        <span class="field-label" data-i18n="orderLabel">Reihenfolge beim Rattern</span>
+        <div class="seg" data-setting="order">
+          <button type="button" data-v="zufall" data-i18n="orderRandom">durcheinander</button>
+          <button type="button" data-v="reihe" data-i18n="orderSeq">der Reihe nach</button>
+        </div>
+        <p class="hint" data-i18n="orderHint"></p>
+      </div>
+    </div>
+  </details>
+
+  <!-- Aussehen -->
+  <details class="card">
+    <summary><div class="sum-row"><span data-i18n="secLook">Aussehen</span><span class="sum-sub" id="lookSum"></span><span class="chev"></span></div></summary>
+    <div class="card-body">
+      <label class="switch-row"><span><span data-i18n="mirror">Spiegelverkehrt (für Frontkamera)</span><small data-i18n="mirrorHint"></small></span><input type="checkbox" class="switch" data-setting="mirror"></label>
+      <div class="field">
+        <span class="field-label" data-i18n="themeLabel">Farbschema</span>
+        <div class="swatches" data-setting="theme" id="themeSwatches"></div>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="sizeLabel">Schriftgröße</span>
+        <div class="seg" data-setting="fontSize">
+          <button type="button" data-v="klein" data-i18n="size_klein">klein</button>
+          <button type="button" data-v="mittel" data-i18n="size_mittel">mittel</button>
+          <button type="button" data-v="gross" data-i18n="size_gross">groß</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label" data-i18n="fontLabel">Schriftart</span>
+        <div class="seg" data-setting="fontFamily">
+          <button type="button" data-v="modern" data-i18n="font_modern">Modern</button>
+          <button type="button" data-v="elegant" data-i18n="font_elegant" style="font-family: ui-serif, Georgia, serif">Elegant</button>
+          <button type="button" data-v="rund" data-i18n="font_rund" style="font-family: ui-rounded, -apple-system, sans-serif">Rund</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="switch-row"><span><span data-i18n="showTitle">Titel anzeigen</span><small data-i18n="showTitleHint"></small></span><input type="checkbox" class="switch" data-setting="showTitle"></label>
+        <label class="field" data-show-if="showTitle"><span data-i18n="titleLabel">Titel</span><input type="text" data-setting="title" maxlength="60" autocomplete="off"></label>
+        <label class="switch-row"><span><span data-i18n="showLabels">Kategorie-Namen anzeigen</span><small data-i18n="showLabelsHint"></small></span><input type="checkbox" class="switch" data-setting="showLabels"></label>
+        <label class="switch-row"><span><span data-i18n="marker">Textmarker beim Höhepunkt</span><small data-i18n="markerHint"></small></span><input type="checkbox" class="switch" data-setting="marker"></label>
+      </div>
+
+      <label class="field"><span data-i18n="startTextLabel">Text des Start-Buttons</span><input type="text" data-setting="startText" maxlength="30" autocomplete="off"></label>
+      <label class="field"><span data-i18n="againTextLabel">Text des Nochmal-Buttons</span><input type="text" data-setting="againText" maxlength="30" autocomplete="off"></label>
+
+      <div class="field">
+        <span class="field-label" data-i18n="posLabel">Position des Textes</span>
+        <div class="seg" data-setting="position">
+          <button type="button" data-v="safe" data-i18n="pos_safe">TikTok-sicher</button>
+          <button type="button" data-v="mitte" data-i18n="pos_mitte">genau mittig</button>
+        </div>
+        <p class="hint" data-i18n="posHint"></p>
+      </div>
+      <div class="field">
+        <label class="switch-row"><span><span data-i18n="safeFrame">Safe-Zone-Rahmen anzeigen</span><small data-i18n="safeFrameHint"></small></span><input type="checkbox" class="switch" data-setting="showSafeFrame"></label>
+        <label class="switch-row"><span><span data-i18n="fullscreen">Vollbild im Video-Modus</span><small data-i18n="fullscreenHint"></small></span><input type="checkbox" class="switch" data-setting="fullscreen"></label>
+      </div>
+    </div>
+  </details>
+
+  <!-- Sound -->
+  <details class="card">
+    <summary><div class="sum-row"><span data-i18n="secSound">Sound</span><span class="sum-sub" id="soundSum"></span><span class="chev"></span></div></summary>
+    <div class="card-body">
+      <label class="switch-row"><span data-i18n="sound">Sound</span><input type="checkbox" class="switch" data-setting="sound.enabled"></label>
+      <div id="soundDetails">
+        <label class="field">
+          <span><span data-i18n="volume">Lautstärke:</span> <output data-out="sound.volume"></output></span>
+          <input type="range" min="0" max="1" step="0.05" data-setting="sound.volume">
+        </label>
+        <div id="soundRows"></div>
+        <p class="hint" data-i18n="soundHint"></p>
+      </div>
+    </div>
+  </details>
+
+  <button type="button" class="btn danger wide" id="resetAll" data-i18n="reset">Alles zurücksetzen</button>
+</main>
+
+<!-- Großer Knopf unten -->
+<div class="bottom-bar" id="bottomBar">
+  <button type="button" class="btn primary" id="goVideo">
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>
+    <span data-i18n="goVideo">Zum Video-Modus</span>
+  </button>
+</div>
+
+<!-- =====================================================================
+     B) VIDEO-MODUS
+     ===================================================================== -->
+<div id="video" class="video" hidden>
+  <div class="stage" id="stage">
+    <div class="safe-frame" id="safeFrame" hidden></div>
+    <div class="block" id="block">
+      <div class="v-title" id="vTitle" hidden></div>
+      <div id="rows"></div>
+    </div>
+  </div>
+
+  <button type="button" class="gear" id="gear" data-i18n-aria="backToSettings" aria-label="Zurück zu den Einstellungen">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+  <button type="button" class="corner-btn" id="startBtn">Starten</button>
+  <button type="button" class="corner-btn gone" id="againBtn" hidden>Nochmal</button>
+
+  <span class="measure" id="measure" aria-hidden="true"><span class="row-prefix" id="measurePre"></span><span id="measureVal"></span></span>
+</div>
+
+<!-- Kurze Meldungen -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- Eigenes Rückfrage-Fenster (z. B. „Kategorie wirklich löschen?") -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalText" hidden>
+  <div class="modal-card">
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="modalCancel" data-i18n="cancel">Abbrechen</button>
+      <button type="button" class="btn primary" id="modalOk">OK</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+'use strict';
+
+/* =====================================================================
+   1) KLEINE HILFSFUNKTIONEN
+   ===================================================================== */
+const $  = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+const deepCopy = (obj) => JSON.parse(JSON.stringify(obj));
+const uid = () => 'k' + Math.random().toString(36).slice(2, 10);
+/** Zahl mit einer Nachkommastelle: Deutsch „2,5", Englisch „2.5" */
+const fmt1 = (v) => {
+  const text = Number(v).toFixed(1);
+  return settings.lang === 'en' ? text : text.replace('.', ',');
+};
+
+/** Zeigt unten kurz eine Meldung an. */
+let toastTimer = 0;
+function toast(message) {
+  const el = $('#toast');
+  el.textContent = message;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+/** Eigenes Rückfrage-Fenster. Liefert true (OK) oder false (Abbrechen).
+    (Das eingebaute confirm() wird auf manchen Seiten blockiert.)
+    Benutzung:  if (!(await askConfirm('Wirklich?', 'Löschen', true))) return; */
+function askConfirm(text, okLabel = 'OK', danger = false) {
+  return new Promise((resolve) => {
+    const modal = $('#modal');
+    const ok = $('#modalOk');
+    const cancel = $('#modalCancel');
+    $('#modalText').textContent = text;
+    ok.textContent = okLabel;
+    cancel.textContent = tr('cancel');
+    ok.classList.toggle('danger-fill', danger);
+    ok.classList.toggle('primary', !danger);
+    modal.hidden = false;
+    ok.focus();
+
+    const finish = (answer) => {
+      modal.hidden = true;
+      ok.onclick = cancel.onclick = modal.onclick = null;
+      document.removeEventListener('keydown', onKey);
+      resolve(answer);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') finish(false); };
+    ok.onclick = () => finish(true);
+    cancel.onclick = () => finish(false);
+    modal.onclick = (e) => { if (e.target === modal) finish(false); }; // Tippen daneben = Abbrechen
+    document.addEventListener('keydown', onKey);
+  });
+}
+
+/** Kleine Symbole (SVG), die in Knöpfen verwendet werden. */
+const ICON = {
+  up:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg>',
+  down:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M18.5 12.5 12 19l-6.5-6.5"/></svg>',
+  trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6 7l1 13h10l1-13M10 11v5M14 11v5"/></svg>',
+  x:     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  play:  '<svg width="14" height="14" viewBox="0 0 24 24"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor"/></svg>',
+};
+
+
+/* =====================================================================
+   2) SPEICHERN IM BROWSER (localStorage) – mit try/catch abgesichert,
+      damit die Seite auch im privaten Modus nicht abstürzt.
+   ===================================================================== */
+const KEYS = {
+  settings: 'lernplan.settings.v1',
+  presets:  'lernplan.presets.v1',
+  active:   'lernplan.activePreset.v1',
+  meta:     'lernplan.meta.v1',   // wann zuletzt geändert (für den Abgleich zwischen Geräten)
+  sound:    (type) => 'lernplan.customSound.' + type + '.v1',
+};
+
+const Store = {
+  get(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw == null ? fallback : JSON.parse(raw);
+    } catch (e) {
+      return fallback;
+    }
+  },
+  set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      return false; // z. B. Speicher voll oder privater Modus
+    }
+  },
+  remove(key) {
+    try { localStorage.removeItem(key); } catch (e) { /* egal */ }
+  },
+};
+
+
+/* =====================================================================
+   3) STANDARDWERTE, FARBSCHEMATA, SCHRIFTEN, SOUND-VARIANTEN
+   ===================================================================== */
+
+/* Farbschemata für den Video-Modus. Hier kannst du Farben ändern
+   oder neue Schemata ergänzen. */
+const THEMES = {
+  creme:  { name: 'Creme',  bg: '#F7F3EC', text: '#7A3E2E', marker: 'rgba(224, 160, 112, 0.38)' },
+  dunkel: { name: 'Dunkel', bg: '#1E1815', text: '#F1DDC9', marker: 'rgba(190, 105, 72, 0.40)' },
+  salbei: { name: 'Salbei', bg: '#EEF1EA', text: '#3F5B46', marker: 'rgba(150, 190, 140, 0.45)' },
+  rose:   { name: 'Rosé',   bg: '#FAF0EE', text: '#8A3A4A', marker: 'rgba(236, 156, 168, 0.42)' },
+};
+
+/* Schriftarten – alle sind auf dem Gerät schon vorhanden (kein Download). */
+const FONTS = {
+  modern:  '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  elegant: 'ui-serif, "New York", Georgia, "Times New Roman", serif',
+  rund:    'ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", -apple-system, BlinkMacSystemFont, sans-serif',
+};
+
+/* Schriftgröße: Faktor für klein / mittel / groß */
+const FONT_SIZES = { klein: 0.8, mittel: 1, gross: 1.22 };
+
+/* Sound-Varianten (interne Namen). Die Anzeigenamen stehen im
+   Wörterbuch weiter unten, z. B. var_klick = „Klick" / „Click". */
+const SOUND_VARIANTS = {
+  tick:   [['klick'], ['holz'], ['digital']],
+  ding:   [['glocke'], ['pling'], ['arcade']],
+  finale: [['aufstieg'], ['fanfare'], ['funkeln']],
+};
+/* Die drei Sound-Arten (Namen & Beschreibung: snd_tick, snd_tick_desc, …) */
+const SOUND_TYPES = [{ key: 'tick' }, { key: 'ding' }, { key: 'finale' }];
+
+/* ---------------------------------------------------------------------
+   SPRACHEN: Deutsch (Standard) und Englisch
+   Alle Texte der Seite stehen hier. Im HTML zeigt ein Attribut wie
+   data-i18n="save", welcher Eintrag an diese Stelle gehört.
+   Platzhalter in {geschweiften Klammern} werden beim Anzeigen ersetzt.
+   --------------------------------------------------------------------- */
+
+/* Standard-Texte im Video (werden beim Sprachwechsel mit übersetzt,
+   solange du sie nicht selbst geändert hast) */
+const DEFAULT_TEXTS = {
+  de: { title: 'Lernplan-Generator', startText: 'Starten', againText: 'Nochmal' },
+  en: { title: 'Study Plan Generator', startText: 'Start', againText: 'Again' },
+};
+
+/* Standard-Kategorien. Wichtig: Gleiche Position = gleiche Bedeutung
+   (z. B. „1+" ↔ „A+"), damit beim Sprachwechsel richtig übersetzt wird. */
+const DEFAULT_CATS = {
+  de: [
+    { name: 'Welches Fach?', prefix: '', options: ['Mathe', 'Deutsch', 'Englisch', 'Biologie', 'Geschichte', 'Chemie'], duration: 2.0, steps: 16 },
+    { name: 'Wie viel Lernstoff?', prefix: '', options: ['15 Seiten', '30 Seiten', '60 Seiten', '90 Seiten', '120 Seiten', '180 Seiten'], duration: 2.5, steps: 18 },
+    { name: 'Wann ist die Klausur?', prefix: '', options: ['Morgen', 'In 2 Tagen', 'In 3 Tagen', 'In 5 Tagen', 'In 7 Tagen', 'In 14 Tagen'], duration: 3.0, steps: 20 },
+    { name: 'Welche Zielnote?', prefix: 'Zielnote:', options: ['1+', '1', '2', '3', '4', '5'], duration: 4.0, steps: 24 },
+  ],
+  en: [
+    { name: 'Which subject?', prefix: '', options: ['Math', 'English', 'Spanish', 'Biology', 'History', 'Chemistry'], duration: 2.0, steps: 16 },
+    { name: 'How much to study?', prefix: '', options: ['15 pages', '30 pages', '60 pages', '90 pages', '120 pages', '180 pages'], duration: 2.5, steps: 18 },
+    { name: 'When is the exam?', prefix: '', options: ['Tomorrow', 'In 2 days', 'In 3 days', 'In 5 days', 'In 7 days', 'In 14 days'], duration: 3.0, steps: 20 },
+    { name: 'Target grade?', prefix: 'Target grade:', options: ['A+', 'A', 'B', 'C', 'D', 'F'], duration: 4.0, steps: 24 },
+  ],
+};
+
+const I18N = {
+  de: {
+    appName: 'Lernplan-Generator',
+    subtitle: 'Einstellungen · Änderungen werden automatisch gespeichert.',
+    guideTitle: 'Kurzanleitung & Tipps',
+    guideHtml: `
+      <ol>
+        <li>Passe unten die <b>Kategorien</b> und <b>Optionen</b> an (oder lass die Standardwerte).</li>
+        <li>Bei <b>„Ergebnis am Ende"</b> kannst du das Ergebnis vorher festlegen – oder es bleibt zufällig.</li>
+        <li>Mit <b>„Zeile testen"</b> siehst und hörst du die Animation schon hier.</li>
+        <li>Tippe unten auf <b>„Zum Video-Modus"</b>.</li>
+        <li>Kamera starten, dann unten rechts auf <b>„Starten"</b> tippen.</li>
+        <li>Über das kleine <b>Zahnrad</b> oben rechts kommst du zurück hierher.</li>
+      </ol>
+      <h4>Tipps zum Filmen</h4>
+      <ul>
+        <li>Talking-Head mit Frontkamera: Schalte unter <b>Aussehen</b> „<b>Spiegelverkehrt</b>" ein, damit der Text im Video richtig herum steht. Mach am besten vorher eine kurze Probeaufnahme.</li>
+        <li>iPhone/iPad: <b>Lautstärke hochdrehen</b> und den <b>Stummschalter</b> ausschalten.</li>
+        <li><b>„Nicht stören"</b> einschalten, damit keine Mitteilungen ins Bild platzen.</li>
+        <li>Bildschirmhelligkeit hoch – dann ist der Text in der Kamera gut lesbar.</li>
+        <li>Mit dem Schalter <b>„Safe-Zone-Rahmen"</b> (unter Aussehen) siehst du, wo der Text sitzt.</li>
+        <li>Speichere fertige Video-Ideen als <b>Preset</b>, z. B. „Video Mathe-Panik".</li>
+        <li>Oben rechts kannst du zwischen <b>DE</b> und <b>EN</b> wechseln.</li>
+      </ul>`,
+    secPresets: 'Presets',
+    presetPh: 'Name, z. B. Video Mathe-Panik',
+    save: 'Speichern',
+    presetEmpty: 'Noch keine Presets gespeichert. Ein Preset merkt sich alle Einstellungen unter einem Namen.',
+    presetLoaded: 'Geladen: „{name}"',
+    presetChanged: ' · mit ungespeicherten Änderungen',
+    presetIntro: 'Speichere deine aktuellen Einstellungen unter einem Namen:',
+    presetCount: '{n} gespeichert',
+    load: 'Laden',
+    presetDeleteAria: 'Preset löschen',
+    active: 'aktiv',
+    savedAt: 'gespeichert am {date}, {time}',
+    presetNeedName: 'Bitte gib dem Preset einen Namen.',
+    presetOverwrite: 'Es gibt schon ein Preset „{name}". Überschreiben?',
+    overwrite: 'Überschreiben',
+    presetSaved: 'Preset „{name}" gespeichert ✓',
+    presetLoadAsk: 'Preset „{name}" laden?\n\nDeine aktuellen Einstellungen sind in keinem Preset gespeichert und werden ersetzt.',
+    presetLoadedToast: 'Preset „{name}" geladen ✓',
+    presetDeleteAsk: 'Preset „{name}" löschen?',
+    presetDeleted: 'Preset gelöscht',
+    presetSaveFail: 'Preset konnte nicht gespeichert werden (Speicher voll oder privater Modus).',
+    secCats: 'Kategorien',
+    catHintHtml: 'Tippe auf eine Kategorie, um sie aufzuklappen. Mit den Pfeilen änderst du die Reihenfolge im Video. Die <b>erste</b> und <b>letzte</b> Zeile erscheinen groß und fett.',
+    addCat: '+ Kategorie hinzufügen',
+    catOne: '1 Kategorie',
+    catMany: '{n} Kategorien',
+    catNone: 'Keine Kategorien vorhanden. Füge unten eine hinzu.',
+    moveUp: 'Nach oben',
+    moveDown: 'Nach unten',
+    deleteCat: 'Kategorie löschen',
+    catName: 'Name der Kategorie',
+    prefixLabel: 'Text vor dem Ergebnis',
+    prefixSmall: '(optional, z. B. „Zielnote:")',
+    prefixPh: 'leer lassen = kein Text davor',
+    options: 'Optionen',
+    addOpt: '+ Option hinzufügen',
+    optAria: 'Option {n}',
+    delOpt: 'Option löschen',
+    resultLabel: 'Ergebnis am Ende',
+    resultRandom: '🎲 Zufällig',
+    resultFixed: 'Fest: {text}',
+    animation: 'Animation',
+    duration: 'Dauer',
+    steps: 'Wechsel',
+    stepsHint: '„Wechsel" = wie oft der Text wechselt, bevor er stehen bleibt.',
+    preview: 'Vorschau',
+    testRow: 'Zeile testen (mit Sound)',
+    noOptions: 'Diese Kategorie hat noch keine Optionen.',
+    metaNoOpts: '⚠️ noch keine Optionen',
+    metaRandom: '🎲 zufällig',
+    empty: '(leer)',
+    metaFinale: ' · Finale',
+    optOne: '1 Option',
+    optMany: '{n} Optionen',
+    untitled: 'Ohne Namen',
+    newCat: 'Neue Kategorie',
+    deleteCatAsk: 'Kategorie „{name}" wirklich löschen?',
+    del: 'Löschen',
+    catDeleted: 'Kategorie gelöscht',
+    secFlow: 'Ablauf',
+    nextRow: 'Nächste Zeile …',
+    auto: 'automatisch',
+    tap: 'per Tippen',
+    tapHint: 'Jede neue Zeile startet erst, wenn du irgendwo auf den Bildschirm tippst. So kannst du beim Filmen in Ruhe reagieren.',
+    pauseLabel: 'Pause zwischen den Zeilen:',
+    orderLabel: 'Reihenfolge beim Rattern',
+    orderRandom: 'durcheinander',
+    orderSeq: 'der Reihe nach',
+    orderHint: '„Der Reihe nach" wirkt wie eine echte Spielautomaten-Walze.',
+    secLook: 'Aussehen',
+    mirror: 'Spiegelverkehrt (für Frontkamera)',
+    mirrorHint: 'Für Talking-Head-Videos: Auf dem Gerät erscheint alles gespiegelt, im Video dann richtig herum. Die Knöpfe „Starten" und Zahnrad liegen dann auf der linken Seite.',
+    mirrored: ' · gespiegelt',
+    themeLabel: 'Farbschema',
+    theme_creme: 'Creme',
+    theme_dunkel: 'Dunkel',
+    theme_salbei: 'Salbei',
+    theme_rose: 'Rosé',
+    sizeLabel: 'Schriftgröße',
+    size_klein: 'klein',
+    size_mittel: 'mittel',
+    size_gross: 'groß',
+    fontLabel: 'Schriftart',
+    font_modern: 'Modern',
+    font_elegant: 'Elegant',
+    font_rund: 'Rund',
+    showTitle: 'Titel anzeigen',
+    showTitleHint: 'steht klein über allen Zeilen',
+    titleLabel: 'Titel',
+    showLabels: 'Kategorie-Namen anzeigen',
+    showLabelsHint: 'z. B. „Welches Fach?" klein über dem Ergebnis',
+    marker: 'Textmarker beim Höhepunkt',
+    markerHint: 'die letzte Zeile wird wie mit einem Textmarker markiert',
+    startTextLabel: 'Text des Start-Buttons',
+    againTextLabel: 'Text des Nochmal-Buttons',
+    posLabel: 'Position des Textes',
+    pos_safe: 'TikTok-sicher',
+    pos_mitte: 'genau mittig',
+    posHint: '„TikTok-sicher" hält Abstand zum unteren und rechten Rand, wo im Video die TikTok-Knöpfe liegen.',
+    safeFrame: 'Safe-Zone-Rahmen anzeigen',
+    safeFrameHint: 'gestrichelter Rahmen zum Ausrichten – vor dem Filmen ausschalten',
+    fullscreen: 'Vollbild im Video-Modus',
+    fullscreenHint: 'klappt auf iPad und Computer (auf dem iPhone leider nicht)',
+    secSound: 'Sound',
+    sound: 'Sound',
+    volume: 'Lautstärke:',
+    soundOn: 'an · {v}',
+    soundOff: 'aus',
+    snd_tick: 'Tick',
+    snd_tick_desc: 'bei jedem Textwechsel',
+    snd_ding: 'Ding',
+    snd_ding_desc: 'wenn eine Zeile stehen bleibt',
+    snd_finale: 'Finale',
+    snd_finale_desc: 'bei der letzten Zeile',
+    var_klick: 'Klick',
+    var_holz: 'Holz',
+    var_digital: 'Digital',
+    var_glocke: 'Glocke',
+    var_pling: 'Pling',
+    var_arcade: 'Arcade',
+    var_aufstieg: 'Aufstieg + Glocke',
+    var_fanfare: 'Fanfare',
+    var_funkeln: 'Funkeln',
+    test: 'Test',
+    ownFile: 'Eigene Datei (mp3/wav) …',
+    remove: 'Entfernen',
+    sessionOnly: ' (nur diese Sitzung)',
+    soundHint: 'Eigene Sounds gelten für alle Presets. Kleine Dateien (unter ca. 1 MB) werden dauerhaft gespeichert, größere nur bis zum Neuladen der Seite.',
+    soundRemoved: 'Eigener Sound entfernt – der erzeugte Sound wird wieder benutzt.',
+    fileTooBig: 'Die Datei ist zu groß (maximal 8 MB).',
+    noAudio: 'Dein Browser unterstützt leider keine Sounds.',
+    soundSaved: 'Eigener Sound gespeichert ✓',
+    soundSession: 'Sound ist aktiv – aber nur bis zum Neuladen (Datei zu groß zum Speichern).',
+    soundBad: 'Diese Datei konnte nicht gelesen werden. Bitte mp3 oder wav verwenden.',
+    reset: 'Alles zurücksetzen',
+    resetAsk: 'Wirklich alles auf die Standardwerte zurücksetzen?\n\nAuch eigene Sound-Dateien werden entfernt. Deine gespeicherten Presets bleiben erhalten.',
+    resetBtn: 'Zurücksetzen',
+    resetDone: 'Alles zurückgesetzt ✓',
+    goVideo: 'Zum Video-Modus',
+    backToSettings: 'Zurück zu den Einstellungen',
+    cancel: 'Abbrechen',
+    storageWarn: 'Hinweis: Speichern im Browser ist hier nicht möglich (privater Modus?).',
+    needCategory: 'Bitte lege mindestens eine Kategorie mit Optionen an.',
+    syncOk: '☁︎ Einstellungen und Presets werden zwischen deinen Geräten abgeglichen.',
+    syncFail: '☁︎ Abgleich gerade nicht möglich – auf diesem Gerät ist alles gespeichert.',
+    syncWriteFail: 'Abgleich mit deinen anderen Geräten hat nicht geklappt. Auf diesem Gerät ist alles gespeichert.',
+    langSwitched: 'Sprache: Deutsch. Standardtexte wurden übersetzt, deine eigenen Texte bleiben, wie sie sind.',
+  },
+
+  en: {
+    appName: 'Study Plan Generator',
+    subtitle: 'Settings · Changes are saved automatically.',
+    guideTitle: 'Quick guide & tips',
+    guideHtml: `
+      <ol>
+        <li>Adjust the <b>categories</b> and <b>options</b> below (or keep the defaults).</li>
+        <li>Under <b>“Result at the end”</b> you can pick the result in advance – or leave it random.</li>
+        <li><b>“Test this row”</b> lets you see and hear the animation right here.</li>
+        <li>Tap <b>“Go to video mode”</b> at the bottom.</li>
+        <li>Start your camera, then tap <b>“Start”</b> in the bottom right.</li>
+        <li>The small <b>gear</b> in the top right brings you back here.</li>
+      </ol>
+      <h4>Filming tips</h4>
+      <ul>
+        <li>Talking head with the front camera: turn on “<b>Mirrored</b>” under <b>Appearance</b> so the text reads the right way round in the video. Do a short test recording first.</li>
+        <li>iPhone/iPad: <b>turn the volume up</b> and switch off <b>silent mode</b>.</li>
+        <li>Turn on <b>“Do Not Disturb”</b> so no notifications pop into the shot.</li>
+        <li>Turn the screen brightness up so the text is easy to read on camera.</li>
+        <li>The <b>“Show safe-zone frame”</b> switch (under Appearance) shows where the text sits.</li>
+        <li>Save finished video ideas as a <b>preset</b>, e.g. “Math panic video”.</li>
+        <li>Switch between <b>DE</b> and <b>EN</b> in the top right.</li>
+      </ul>`,
+    secPresets: 'Presets',
+    presetPh: 'Name, e.g. Math panic video',
+    save: 'Save',
+    presetEmpty: 'No presets saved yet. A preset stores all your settings under one name.',
+    presetLoaded: 'Loaded: “{name}”',
+    presetChanged: ' · with unsaved changes',
+    presetIntro: 'Save your current settings under a name:',
+    presetCount: '{n} saved',
+    load: 'Load',
+    presetDeleteAria: 'Delete preset',
+    active: 'active',
+    savedAt: 'saved {date}, {time}',
+    presetNeedName: 'Please give the preset a name.',
+    presetOverwrite: 'A preset called “{name}” already exists. Overwrite it?',
+    overwrite: 'Overwrite',
+    presetSaved: 'Preset “{name}” saved ✓',
+    presetLoadAsk: 'Load preset “{name}”?\n\nYour current settings aren’t saved in any preset and will be replaced.',
+    presetLoadedToast: 'Preset “{name}” loaded ✓',
+    presetDeleteAsk: 'Delete preset “{name}”?',
+    presetDeleted: 'Preset deleted',
+    presetSaveFail: 'The preset couldn’t be saved (storage full or private mode).',
+    secCats: 'Categories',
+    catHintHtml: 'Tap a category to open it. Use the arrows to change the order in the video. The <b>first</b> and <b>last</b> rows appear large and bold.',
+    addCat: '+ Add category',
+    catOne: '1 category',
+    catMany: '{n} categories',
+    catNone: 'No categories yet. Add one below.',
+    moveUp: 'Move up',
+    moveDown: 'Move down',
+    deleteCat: 'Delete category',
+    catName: 'Category name',
+    prefixLabel: 'Text before the result',
+    prefixSmall: '(optional, e.g. “Target grade:”)',
+    prefixPh: 'leave empty for no text',
+    options: 'Options',
+    addOpt: '+ Add option',
+    optAria: 'Option {n}',
+    delOpt: 'Delete option',
+    resultLabel: 'Result at the end',
+    resultRandom: '🎲 Random',
+    resultFixed: 'Fixed: {text}',
+    animation: 'Animation',
+    duration: 'Duration',
+    steps: 'Changes',
+    stepsHint: '“Changes” = how often the text switches before it stops.',
+    preview: 'Preview',
+    testRow: 'Test this row (with sound)',
+    noOptions: 'This category has no options yet.',
+    metaNoOpts: '⚠️ no options yet',
+    metaRandom: '🎲 random',
+    empty: '(empty)',
+    metaFinale: ' · finale',
+    optOne: '1 option',
+    optMany: '{n} options',
+    untitled: 'Untitled',
+    newCat: 'New category',
+    deleteCatAsk: 'Delete category “{name}”?',
+    del: 'Delete',
+    catDeleted: 'Category deleted',
+    secFlow: 'Flow',
+    nextRow: 'Next row …',
+    auto: 'automatically',
+    tap: 'on tap',
+    tapHint: 'Each new row only starts when you tap anywhere on the screen, so you have time to react while filming.',
+    pauseLabel: 'Pause between rows:',
+    orderLabel: 'Order while spinning',
+    orderRandom: 'shuffled',
+    orderSeq: 'in sequence',
+    orderHint: '“In sequence” looks like a real slot-machine reel.',
+    secLook: 'Appearance',
+    mirror: 'Mirrored (for front camera)',
+    mirrorHint: 'For talking-head videos: everything appears mirrored on the device and the right way round in the video. The Start button and the gear then sit on the left.',
+    mirrored: ' · mirrored',
+    themeLabel: 'Color scheme',
+    theme_creme: 'Cream',
+    theme_dunkel: 'Dark',
+    theme_salbei: 'Sage',
+    theme_rose: 'Rosé',
+    sizeLabel: 'Font size',
+    size_klein: 'small',
+    size_mittel: 'medium',
+    size_gross: 'large',
+    fontLabel: 'Font',
+    font_modern: 'Modern',
+    font_elegant: 'Elegant',
+    font_rund: 'Rounded',
+    showTitle: 'Show title',
+    showTitleHint: 'appears small above all rows',
+    titleLabel: 'Title',
+    showLabels: 'Show category names',
+    showLabelsHint: 'e.g. “Which subject?” small above the result',
+    marker: 'Highlighter on the finale',
+    markerHint: 'the last row gets marked as if with a highlighter',
+    startTextLabel: 'Start button text',
+    againTextLabel: 'Again button text',
+    posLabel: 'Text position',
+    pos_safe: 'TikTok-safe',
+    pos_mitte: 'centered',
+    posHint: '“TikTok-safe” keeps clear of the bottom and right edges, where TikTok’s buttons sit in the video.',
+    safeFrame: 'Show safe-zone frame',
+    safeFrameHint: 'dashed frame for lining things up – turn it off before filming',
+    fullscreen: 'Full screen in video mode',
+    fullscreenHint: 'works on iPad and computer (not on iPhone)',
+    secSound: 'Sound',
+    sound: 'Sound',
+    volume: 'Volume:',
+    soundOn: 'on · {v}',
+    soundOff: 'off',
+    snd_tick: 'Tick',
+    snd_tick_desc: 'on every text change',
+    snd_ding: 'Ding',
+    snd_ding_desc: 'when a row stops',
+    snd_finale: 'Finale',
+    snd_finale_desc: 'on the last row',
+    var_klick: 'Click',
+    var_holz: 'Wood',
+    var_digital: 'Digital',
+    var_glocke: 'Bell',
+    var_pling: 'Pling',
+    var_arcade: 'Arcade',
+    var_aufstieg: 'Rise + bell',
+    var_fanfare: 'Fanfare',
+    var_funkeln: 'Sparkle',
+    test: 'Test',
+    ownFile: 'Own file (mp3/wav) …',
+    remove: 'Remove',
+    sessionOnly: ' (this session only)',
+    soundHint: 'Custom sounds apply to all presets. Small files (under about 1 MB) are saved permanently, larger ones only until the page is reloaded.',
+    soundRemoved: 'Custom sound removed – the built-in sound is used again.',
+    fileTooBig: 'The file is too large (max. 8 MB).',
+    noAudio: 'Sorry, your browser doesn’t support sound.',
+    soundSaved: 'Custom sound saved ✓',
+    soundSession: 'Sound is active – but only until you reload (file too large to save).',
+    soundBad: 'This file couldn’t be read. Please use mp3 or wav.',
+    reset: 'Reset everything',
+    resetAsk: 'Reset everything to the defaults?\n\nCustom sound files are removed too. Your saved presets are kept.',
+    resetBtn: 'Reset',
+    resetDone: 'Everything reset ✓',
+    goVideo: 'Go to video mode',
+    backToSettings: 'Back to settings',
+    cancel: 'Cancel',
+    storageWarn: 'Note: this browser can’t save settings here (private mode?).',
+    needCategory: 'Please add at least one category with options.',
+    syncOk: '☁︎ Settings and presets are synced between your devices.',
+    syncFail: '☁︎ Sync isn’t available right now – everything is saved on this device.',
+    syncWriteFail: 'Syncing with your other devices didn’t work. Everything is saved on this device.',
+    langSwitched: 'Language: English. Default texts were translated; your own texts stay as they are.',
+  },
+};
+
+/** Holt einen Text in der gewählten Sprache. Beispiel: tr('presetSaved', { name: 'Mathe' }) */
+function tr(key, vars) {
+  const lang = settings && settings.lang === 'en' ? 'en' : 'de';
+  let text = (I18N[lang] && I18N[lang][key]) ?? I18N.de[key] ?? key;
+  if (vars) text = text.replace(/\{(\w+)\}/g, (m, name) => (vars[name] != null ? String(vars[name]) : m));
+  return text;
+}
+
+/** Hilfsfunktion: erzeugt eine Kategorie. */
+function makeCategory(name, prefix, options, duration, steps) {
+  return {
+    id: uid(),
+    name,               // z. B. „Welches Fach?"
+    prefix,             // Text vor dem Ergebnis, z. B. „Zielnote:"
+    options,            // Liste der möglichen Ergebnisse
+    result: 'random',   // 'random' = zufällig, sonst Nummer der festen Option (0 = erste)
+    duration,           // Dauer der Animation in Sekunden
+    steps,              // wie oft der Text wechselt
+  };
+}
+
+/** Die Standard-Einstellungen (werden auch bei „Alles zurücksetzen" benutzt).
+    lang = 'de' (Standard) oder 'en'. */
+function defaultSettings(lang = 'de') {
+  const texts = DEFAULT_TEXTS[lang] || DEFAULT_TEXTS.de;
+  return {
+    lang,                  // Sprache: 'de' oder 'en'
+    title: texts.title,
+    showTitle: false,
+    startText: texts.startText,
+    againText: texts.againText,
+    showLabels: false,
+    marker: true,
+    fontSize: 'mittel',
+    fontFamily: 'modern',
+    theme: 'creme',
+    position: 'safe',
+    showSafeFrame: false,
+    fullscreen: true,
+    mirror: false,         // spiegelverkehrt für die Frontkamera
+    advanceMode: 'auto',   // 'auto' oder 'tap'
+    pause: 0.8,            // Sekunden Pause zwischen Zeilen (nur bei „automatisch")
+    order: 'zufall',       // 'zufall' oder 'reihe'
+    sound: {
+      enabled: true,
+      volume: 0.8,
+      tick: 'klick',
+      ding: 'glocke',
+      finale: 'aufstieg',
+    },
+    // Reihenfolge so, dass es immer dramatischer wird (Animation wird länger)
+    categories: (DEFAULT_CATS[lang] || DEFAULT_CATS.de).map((c) =>
+      makeCategory(c.name, c.prefix, c.options.slice(), c.duration, c.steps)),
+  };
+}
+
+
+/* =====================================================================
+   4) EINSTELLUNGEN PRÜFEN
+      Gespeicherte Daten könnten unvollständig oder kaputt sein.
+      Diese Funktionen machen daraus immer gültige Einstellungen.
+   ===================================================================== */
+function normalizeSettings(raw) {
+  const lang = raw && raw.lang === 'en' ? 'en' : 'de';
+  const d = defaultSettings(lang);
+  if (!raw || typeof raw !== 'object') return d;
+
+  const str  = (v, fb) => (typeof v === 'string' ? v : fb);
+  const bool = (v, fb) => (typeof v === 'boolean' ? v : fb);
+  const num  = (v, min, max, fb) => (typeof v === 'number' && isFinite(v) ? clamp(v, min, max) : fb);
+  const pick = (v, allowed, fb) => (allowed.includes(v) ? v : fb);
+  const snd  = raw.sound && typeof raw.sound === 'object' ? raw.sound : {};
+  const variants = (type) => SOUND_VARIANTS[type].map((v) => v[0]);
+
+  return {
+    lang,
+    title:        str(raw.title, d.title),
+    showTitle:    bool(raw.showTitle, d.showTitle),
+    startText:    str(raw.startText, d.startText),
+    againText:    str(raw.againText, d.againText),
+    showLabels:   bool(raw.showLabels, d.showLabels),
+    marker:       bool(raw.marker, d.marker),
+    fontSize:     pick(raw.fontSize, Object.keys(FONT_SIZES), d.fontSize),
+    fontFamily:   pick(raw.fontFamily, Object.keys(FONTS), d.fontFamily),
+    theme:        pick(raw.theme, Object.keys(THEMES), d.theme),
+    position:     pick(raw.position, ['safe', 'mitte'], d.position),
+    showSafeFrame: bool(raw.showSafeFrame, d.showSafeFrame),
+    fullscreen:   bool(raw.fullscreen, d.fullscreen),
+    mirror:       bool(raw.mirror, d.mirror),
+    advanceMode:  pick(raw.advanceMode, ['auto', 'tap'], d.advanceMode),
+    pause:        num(raw.pause, 0, 3, d.pause),
+    order:        pick(raw.order, ['zufall', 'reihe'], d.order),
+    sound: {
+      enabled: bool(snd.enabled, d.sound.enabled),
+      volume:  num(snd.volume, 0, 1, d.sound.volume),
+      tick:    pick(snd.tick, variants('tick'), d.sound.tick),
+      ding:    pick(snd.ding, variants('ding'), d.sound.ding),
+      finale:  pick(snd.finale, variants('finale'), d.sound.finale),
+    },
+    categories: Array.isArray(raw.categories)
+      ? raw.categories.map(normalizeCategory).filter(Boolean)
+      : d.categories,
+  };
+}
+
+function normalizeCategory(c) {
+  if (!c || typeof c !== 'object') return null;
+  const options = Array.isArray(c.options) ? c.options.map((o) => (o == null ? '' : String(o))) : [];
+  let result = c.result;
+  if (!(Number.isInteger(result) && result >= 0 && result < options.length)) result = 'random';
+  return {
+    id: typeof c.id === 'string' && c.id ? c.id : uid(),
+    name: typeof c.name === 'string' ? c.name : 'Kategorie',
+    prefix: typeof c.prefix === 'string' ? c.prefix : '',
+    options,
+    result,
+    duration: typeof c.duration === 'number' && isFinite(c.duration) ? clamp(c.duration, 0.5, 6) : 2.5,
+    steps: Number.isFinite(c.steps) ? clamp(Math.round(c.steps), 4, 50) : 18,
+  };
+}
+
+/** Nur die nicht-leeren Optionen einer Kategorie (mit ihrer Original-Nummer). */
+function validOptions(cat) {
+  return cat.options
+    .map((text, i) => ({ text: String(text).trim(), i }))
+    .filter((o) => o.text !== '');
+}
+
+/** Bestimmt das Endergebnis: feste Option oder Zufall.
+    Gibt die Position innerhalb von validOptions() zurück. */
+function pickFinal(cat, opts) {
+  if (cat.result !== 'random') {
+    const j = opts.findIndex((o) => o.i === cat.result);
+    if (j >= 0) return j;
+  }
+  return Math.floor(Math.random() * opts.length);
+}
+
+/** Text vor dem Ergebnis inkl. Leerzeichen („Zielnote:" → „Zielnote: "). */
+function prefixText(cat) {
+  const p = (cat.prefix || '').trim();
+  return p ? p + ' ' : '';
+}
+
+
+/* ---------------------------------------------------------------------
+   Aktuelle Einstellungen laden (oder Standardwerte, wenn nichts da ist)
+   --------------------------------------------------------------------- */
+let settings = normalizeSettings(Store.get(KEYS.settings, null));
+/* Zeitstempel der letzten Änderung – damit beim Abgleich zwischen
+   iPhone und iPad immer der neueste Stand gewinnt. */
+const meta = Object.assign({ settingsAt: 0, presetsAt: 0 }, Store.get(KEYS.meta, {}));
+let storageWarned = false;
+let settingsDirty = false;
+let saveTimer = 0;
+
+/** Merkt eine Änderung vor und speichert sie (leicht verzögert, damit
+    beim Tippen nicht bei jedem Buchstaben gespeichert wird). */
+function save() {
+  settingsDirty = true;
+  meta.settingsAt = Date.now();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 250);
+  updateSummaries();
+}
+/** Speichert vorgemerkte Änderungen sofort. */
+function saveNow() {
+  clearTimeout(saveTimer);
+  if (!settingsDirty) return;
+  settingsDirty = false;
+  const ok = Store.set(KEYS.settings, settings) && Store.set(KEYS.meta, meta);
+  if (!ok && !storageWarned) {
+    storageWarned = true;
+    toast(tr('storageWarn'));
+  }
+  Cloud.push('settings');
+}
+window.addEventListener('pagehide', saveNow);
+
+
+/* =====================================================================
+   5) SOUND-ENGINE (Web Audio API)
+      Alle Sounds werden direkt im Code erzeugt – keine Dateien nötig.
+   ===================================================================== */
+
+/* --- Bausteine zum Erzeugen von Tönen --- */
+
+/** Spielt einen Ton: schneller Anstieg, dann exponentielles Ausklingen.
+    f = Frequenz in Hz, f2 = Zielfrequenz (für Gleiten), a = Anstieg (s),
+    d = Ausklingen (s), v = Lautstärke (0–1). */
+function tone(ctx, out, { type = 'sine', f, f2 = 0, glide = 0, t, a = 0.002, d = 0.3, v = 0.3, lowpass = 0 }) {
+  const osc = ctx.createOscillator();
+  osc.type = type;
+  osc.frequency.setValueAtTime(f, t);
+  if (f2) osc.frequency.exponentialRampToValueAtTime(f2, t + (glide || d));
+
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(v, t + a);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + a + d);
+
+  let node = osc;
+  if (lowpass) {
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = lowpass;
+    osc.connect(lp);
+    node = lp;
+  }
+  node.connect(g);
+  g.connect(out);
+  osc.start(t);
+  osc.stop(t + a + d + 0.05);
+}
+
+/** Kurzes, gefiltertes Rauschen (für trockene Klick-Geräusche). */
+function noiseBurst(ctx, out, buffer, { t, d = 0.02, v = 0.3, f = 2000, q = 1 }) {
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = f;
+  bp.Q.value = q;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(v, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  src.connect(bp);
+  bp.connect(g);
+  g.connect(out);
+  src.start(t);
+  src.stop(t + d + 0.02);
+}
+
+/** Ein Ton, der von f1 nach f2 gleitet und dabei hörbar bleibt (für das Finale). */
+function sweep(ctx, out, { t, f1, f2, dur, v = 0.3, type = 'triangle' }) {
+  const osc = ctx.createOscillator();
+  osc.type = type;
+  osc.frequency.setValueAtTime(f1, t);
+  osc.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(v, t + 0.03);
+  g.gain.setValueAtTime(v, t + dur * 0.8);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.04);
+  osc.connect(g);
+  g.connect(out);
+  osc.start(t);
+  osc.stop(t + dur + 0.06);
+}
+
+/* --- Die eigentlichen Sounds (je 3 Varianten) --- */
+const SYNTH = {
+  tick: {
+    // Heller, trockener Klick (~25 ms, um 1500–1800 Hz)
+    klick(ctx, out, t, nb) {
+      tone(ctx, out, { type: 'triangle', f: 1800, f2: 1500, glide: 0.025, t, a: 0.001, d: 0.024, v: 0.5 });
+      noiseBurst(ctx, out, nb, { t, d: 0.012, v: 0.22, f: 3500, q: 0.8 });
+    },
+    // Wärmerer „Holzblock"-Klick
+    holz(ctx, out, t, nb) {
+      tone(ctx, out, { type: 'sine', f: 1150, f2: 850, glide: 0.03, t, a: 0.001, d: 0.03, v: 0.75 });
+      noiseBurst(ctx, out, nb, { t, d: 0.018, v: 0.2, f: 1400, q: 3 });
+    },
+    // Kurzer Computer-Piep
+    digital(ctx, out, t) {
+      const osc = ctx.createOscillator();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(2000, t);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(0.13, t + 0.001);
+      g.gain.setValueAtTime(0.13, t + 0.016);
+      g.gain.linearRampToValueAtTime(0.0001, t + 0.022);
+      const lp = ctx.createBiquadFilter();
+      lp.type = 'lowpass';
+      lp.frequency.value = 7000;
+      osc.connect(lp);
+      lp.connect(g);
+      g.connect(out);
+      osc.start(t);
+      osc.stop(t + 0.03);
+    },
+  },
+
+  ding: {
+    // Glocke: ~1300 Hz mit leichten Obertönen, ~0,55 s Ausklingen
+    glocke(ctx, out, t) {
+      tone(ctx, out, { f: 1318.5, t, a: 0.003, d: 0.55, v: 0.4 });
+      tone(ctx, out, { f: 2637, t, a: 0.003, d: 0.28, v: 0.09 });
+      tone(ctx, out, { f: 3640, t, a: 0.002, d: 0.14, v: 0.045 });
+    },
+    // Weiches „Pling"
+    pling(ctx, out, t) {
+      tone(ctx, out, { type: 'triangle', f: 1700, f2: 1568, glide: 0.02, t, a: 0.002, d: 0.42, v: 0.45 });
+      tone(ctx, out, { f: 3136, t, a: 0.002, d: 0.18, v: 0.07 });
+    },
+    // Spielhallen-Sound: drei schnelle Töne
+    arcade(ctx, out, t) {
+      tone(ctx, out, { type: 'square', f: 1318.5, t, a: 0.002, d: 0.06, v: 0.11, lowpass: 5000 });
+      tone(ctx, out, { type: 'square', f: 1760, t: t + 0.06, a: 0.002, d: 0.06, v: 0.11, lowpass: 5000 });
+      tone(ctx, out, { type: 'square', f: 2093, t: t + 0.12, a: 0.002, d: 0.38, v: 0.11, lowpass: 5000 });
+    },
+  },
+
+  finale: {
+    // Aufsteigender Ton (1000 → 1600 Hz in 0,3 s), danach ein heller Ding
+    aufstieg(ctx, out, t) {
+      sweep(ctx, out, { t, f1: 1000, f2: 1600, dur: 0.3, v: 0.28 });
+      const b = t + 0.3;
+      tone(ctx, out, { f: 1568, t: b, a: 0.003, d: 0.95, v: 0.36 });
+      tone(ctx, out, { f: 2093, t: b, a: 0.003, d: 0.8, v: 0.18 });
+      tone(ctx, out, { f: 3136, t: b, a: 0.002, d: 0.35, v: 0.06 });
+      tone(ctx, out, { f: 4328, t: b, a: 0.002, d: 0.18, v: 0.03 });
+    },
+    // Kleine Fanfare: vier aufsteigende Töne, der letzte klingt lange
+    fanfare(ctx, out, t) {
+      [1046.5, 1318.5, 1568].forEach((f, i) => {
+        tone(ctx, out, { type: 'triangle', f, t: t + i * 0.08, a: 0.004, d: 0.16, v: 0.3 });
+      });
+      const b = t + 0.24;
+      tone(ctx, out, { type: 'triangle', f: 2093, t: b, a: 0.004, d: 1.0, v: 0.3 });
+      tone(ctx, out, { f: 1568, t: b, a: 0.004, d: 0.9, v: 0.15 });
+      tone(ctx, out, { f: 1046.5, t: b, a: 0.004, d: 0.9, v: 0.12 });
+    },
+    // Aufstieg + glitzernde hohe Töne
+    funkeln(ctx, out, t) {
+      sweep(ctx, out, { t, f1: 1000, f2: 1600, dur: 0.25, v: 0.24 });
+      const b = t + 0.25;
+      tone(ctx, out, { f: 1568, t: b, a: 0.003, d: 0.85, v: 0.32 });
+      [2637, 3136, 3520, 2794, 3951, 4186].forEach((f, i) => {
+        tone(ctx, out, { f, t: b + 0.03 + i * 0.05, a: 0.002, d: 0.22, v: 0.08 * (1 - i * 0.1) });
+      });
+    },
+  },
+};
+
+/** Liest eine Daten-URL (base64) in einen ArrayBuffer ein. */
+function dataUrlToArrayBuffer(url) {
+  const b64 = url.slice(url.indexOf(',') + 1);
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+
+/** decodeAudioData – funktioniert so auch auf älteren iPhones. */
+function decodeAudio(ctx, arrayBuffer) {
+  return new Promise((resolve, reject) => {
+    const p = ctx.decodeAudioData(arrayBuffer, resolve, reject);
+    if (p && typeof p.then === 'function') p.then(resolve, reject);
+  });
+}
+
+/** Erzeugt eine kurze stille WAV-Datei (iOS-Trick, siehe unten). */
+function makeSilentWavUrl() {
+  const rate = 8000, samples = 4000; // 0,5 Sekunden Stille
+  const buf = new ArrayBuffer(44 + samples * 2);
+  const v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + samples * 2, true); w(8, 'WAVE');
+  w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, samples * 2, true);
+  return URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+}
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+const Sound = {
+  ctx: null,        // der AudioContext („Mischpult")
+  master: null,     // Hauptlautstärke
+  noiseBuf: null,   // Rauschen für Klick-Geräusche
+  silentEl: null,   // stilles <audio>-Element (iOS-Trick)
+  lastTick: null,
+  // Eigene Sound-Dateien: { name, dataUrl, buffer, sessionOnly }
+  custom: { tick: null, ding: null, finale: null },
+
+  /** Erstellt den AudioContext beim ersten Bedarf. */
+  ensure() {
+    if (this.ctx) return this.ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { this.ctx = new AC({ latencyHint: 'interactive' }); }
+    catch (e) { try { this.ctx = new AC(); } catch (e2) { return null; } }
+
+    // Ein „Begrenzer", damit es bei überlagerten Tönen nicht verzerrt
+    const limiter = this.ctx.createDynamicsCompressor();
+    limiter.threshold.value = -4;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.001;
+    limiter.release.value = 0.1;
+    limiter.connect(this.ctx.destination);
+
+    this.master = this.ctx.createGain();
+    this.master.connect(limiter);
+    this.applyVolume();
+
+    // 0,2 Sekunden weißes Rauschen vorbereiten
+    const len = Math.floor(this.ctx.sampleRate * 0.2);
+    this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const data = this.noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    return this.ctx;
+  },
+
+  /** Muss bei einer Berührung aufgerufen werden: iPhone/iPad erlauben
+      Ton erst nach einem Tippen. */
+  unlock() {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    // Neuere iPhones: Ton auch bei eingeschaltetem Stummschalter
+    if (navigator.audioSession) {
+      try { navigator.audioSession.type = 'playback'; } catch (e) { /* egal */ }
+    } else if (isIOS) {
+      this.startSilentLoop(); // ältere iPhones: gleicher Effekt über stilles Audio
+    }
+    if (ctx.state !== 'running') {
+      try { const p = ctx.resume(); if (p && p.catch) p.catch(() => {}); } catch (e) { /* egal */ }
+    }
+    if (!this.warmedUp) {
+      // Ein unhörbarer Mini-Ton „weckt" die Audio-Ausgabe auf (iOS-Trick)
+      try {
+        const s = ctx.createBufferSource();
+        s.buffer = ctx.createBuffer(1, 1, 22050);
+        s.connect(ctx.destination);
+        s.start(0);
+        this.warmedUp = true;
+      } catch (e) { /* egal */ }
+    }
+    this.decodeCustoms();
+  },
+
+  startSilentLoop() {
+    if (!this.silentEl) {
+      const el = document.createElement('audio');
+      el.src = makeSilentWavUrl();
+      el.loop = true;
+      el.setAttribute('playsinline', '');
+      this.silentEl = el;
+    }
+    if (this.silentEl.paused) {
+      const p = this.silentEl.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+  },
+
+  applyVolume() {
+    if (this.master) this.master.gain.value = settings.sound.volume;
+  },
+
+  /** Spielt einen Sound: 'tick', 'ding' oder 'finale'. */
+  play(type, force = false) {
+    if (!settings.sound.enabled && !force) return;
+    const ctx = this.ensure();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') { try { ctx.resume(); } catch (e) { /* egal */ } }
+    const now = ctx.currentTime;
+
+    // Eigene Datei vorhanden? Dann diese abspielen.
+    const c = this.custom[type];
+    if (c && c.buffer) { this.playBuffer(type, c.buffer, now); return; }
+
+    const variants = SYNTH[type];
+    const fn = variants[settings.sound[type]] || Object.values(variants)[0];
+    try { fn(ctx, this.master, now, this.noiseBuf); } catch (e) { console.warn(e); }
+  },
+
+  playBuffer(type, buffer, now) {
+    const ctx = this.ctx;
+    // Beim Tick: vorherigen Tick abschneiden, damit sich nichts stapelt
+    if (type === 'tick' && this.lastTick) {
+      try {
+        this.lastTick.gain.gain.setTargetAtTime(0, now, 0.004);
+        this.lastTick.src.stop(now + 0.03);
+      } catch (e) { /* egal */ }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const gain = ctx.createGain();
+    src.connect(gain);
+    gain.connect(this.master);
+    src.start(now);
+    if (type === 'tick') this.lastTick = { src, gain };
+  },
+
+  /** Gespeicherte eigene Sounds in abspielbare Form umwandeln. */
+  async decodeCustoms() {
+    const ctx = this.ensure();
+    if (!ctx) return;
+    for (const type of Object.keys(this.custom)) {
+      const c = this.custom[type];
+      if (!c || c.buffer || c.decoding || !c.dataUrl) continue;
+      c.decoding = true;
+      try { c.buffer = await decodeAudio(ctx, dataUrlToArrayBuffer(c.dataUrl)); }
+      catch (e) { console.warn('Sound konnte nicht gelesen werden', e); }
+      c.decoding = false;
+    }
+  },
+
+  loadCustomsFromStorage() {
+    for (const type of Object.keys(this.custom)) {
+      const saved = Store.get(KEYS.sound(type), null);
+      if (saved && typeof saved.dataUrl === 'string') {
+        this.custom[type] = { name: String(saved.name || 'Eigene Datei'), dataUrl: saved.dataUrl, buffer: null };
+      }
+    }
+  },
+
+  removeCustom(type) {
+    this.custom[type] = null;
+    Store.remove(KEYS.sound(type));
+  },
+};
+
+/* Beim allerersten Tippen irgendwo auf der Seite den Ton freischalten. */
+['pointerdown', 'touchend', 'click', 'keydown'].forEach((evt) => {
+  document.addEventListener(evt, () => Sound.unlock(), { capture: true, passive: true });
+});
+/* Stilles Audio pausieren, wenn die Seite im Hintergrund ist. */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && Sound.silentEl) Sound.silentEl.pause();
+});
+
+
+/* =====================================================================
+   6) DIE „RATTER"-ANIMATION (wie ein Spielautomat)
+   ===================================================================== */
+const MIN_GAP = 28; // kürzester Abstand zwischen zwei Wechseln (ms)
+
+/** Berechnet die Zeitpunkte aller Textwechsel.
+    Am Anfang sehr schnell, zum Ende hin immer langsamer.
+    Ergebnis: [0, …, Gesamtdauer] in Millisekunden. */
+function buildTimes(steps, totalMs) {
+  const gaps = steps - 1;
+  const ratio = 12; // die letzte Pause ist ca. 12× so lang wie die erste
+  const weights = [];
+  let sum = 0;
+  for (let i = 0; i < gaps; i++) {
+    const x = gaps === 1 ? 1 : i / (gaps - 1);
+    const w = Math.pow(ratio, x);
+    weights.push(w);
+    sum += w;
+  }
+  const times = [0];
+  let t = 0;
+  for (let i = 0; i < gaps; i++) {
+    t += Math.max(MIN_GAP, (totalMs * weights[i]) / sum);
+    times.push(t);
+  }
+  return times;
+}
+
+/** Legt fest, welche Option bei welchem Wechsel angezeigt wird.
+    Der letzte Eintrag ist immer das Endergebnis. */
+function buildSequence(count, finalIndex, steps, order) {
+  const seq = new Array(steps);
+  seq[steps - 1] = finalIndex;
+  if (count <= 1) return seq.fill(0);
+
+  if (order === 'reihe') {
+    // Wie eine Walze: immer die nächste Option, endet beim Ergebnis
+    for (let k = 0; k < steps; k++) {
+      seq[k] = (((finalIndex - (steps - 1 - k)) % count) + count) % count;
+    }
+    return seq;
+  }
+  // Durcheinander, aber nie zweimal dieselbe Option direkt hintereinander
+  for (let k = steps - 2; k >= 0; k--) {
+    let idx, tries = 0;
+    do {
+      idx = Math.floor(Math.random() * count);
+      tries++;
+    } while (tries < 30 && (idx === seq[k + 1] || (count > 2 && k + 2 < steps && idx === seq[k + 2])));
+    seq[k] = idx;
+  }
+  return seq;
+}
+
+/** Kurzer „Walzen"-Effekt bei jedem Wechsel: Text rutscht von oben rein. */
+function rollAnim(el, gapMs) {
+  if (!el.animate) return;
+  const duration = clamp(gapMs * 0.8, 24, 170);
+  try {
+    el.animate(
+      [{ transform: 'translateY(-0.22em)', opacity: 0.3 }, { transform: 'translateY(0)', opacity: 1 }],
+      { duration, easing: 'cubic-bezier(.2,.7,.3,1)' }
+    );
+  } catch (e) { /* egal */ }
+}
+
+/** Aufpopp-Effekt, wenn eine Zeile stehen bleibt. */
+function popAnim(el, isFinale) {
+  if (!el.animate) return;
+  const frames = isFinale
+    ? [{ transform: 'scale(1)' }, { transform: 'scale(1.28)', offset: 0.3 }, { transform: 'scale(0.97)', offset: 0.65 }, { transform: 'scale(1)' }]
+    : [{ transform: 'scale(1)' }, { transform: 'scale(1.16)', offset: 0.35 }, { transform: 'scale(1)' }];
+  try {
+    el.animate(frames, { duration: isFinale ? 700 : 420, easing: 'ease-out' });
+  } catch (e) { /* egal */ }
+}
+
+/**
+ * Lässt eine Zeile rattern und beim Ergebnis stehen bleiben.
+ *  p.rowEl      – die ganze Zeile (bekommt Klassen für Effekte)
+ *  p.valueEl    – das Element mit dem wechselnden Text
+ *  p.popEl      – das Element, das am Ende aufpoppt
+ *  p.texts      – alle möglichen Texte
+ *  p.finalIndex – Position des Endergebnisses in p.texts
+ *  p.duration   – Dauer in Sekunden
+ *  p.steps      – Anzahl der Textwechsel
+ *  p.isFinale   – letzte Zeile? (→ Finale-Sound + Textmarker)
+ *  p.onDone     – wird aufgerufen, sobald das Ergebnis steht
+ * Gibt ein Objekt mit cancel() zurück (zum Abbrechen).
+ */
+function rattle(p) {
+  const steps = Math.max(2, Math.round(p.steps));
+  const seq = buildSequence(p.texts.length, p.finalIndex, steps, settings.order);
+  const times = buildTimes(steps, p.duration * 1000);
+  const t0 = performance.now();
+  let k = -1;
+  let rafId = 0;
+  let markTimer = 0;
+  let finished = false;
+
+  p.rowEl.classList.remove('marked');
+  p.rowEl.classList.add('rolling');
+
+  function frame(now) {
+    if (finished) return;
+    // Welcher Wechsel ist jetzt dran?
+    let next = k;
+    while (next + 1 < steps && now - t0 >= times[next + 1]) next++;
+
+    if (next !== k) {
+      k = next;
+      p.valueEl.textContent = p.texts[seq[k]];
+      Sound.play('tick'); // genau EIN Tick pro Textwechsel → immer synchron
+      if (k === steps - 1) { land(); return; }
+      rollAnim(p.valueEl, times[k + 1] - times[k]);
+    }
+    rafId = requestAnimationFrame(frame);
+  }
+
+  function land() {
+    finished = true;
+    p.rowEl.classList.remove('rolling');
+    Sound.play(p.isFinale ? 'finale' : 'ding');
+    popAnim(p.popEl, p.isFinale);
+    if (p.isFinale && settings.marker) {
+      // Textmarker passend zum „Ding" nach dem aufsteigenden Ton
+      markTimer = setTimeout(() => p.rowEl.classList.add('marked'), 280);
+    }
+    if (p.onDone) p.onDone();
+  }
+
+  frame(t0); // ersten Text sofort zeigen
+
+  return {
+    cancel() {
+      finished = true;
+      cancelAnimationFrame(rafId);
+      clearTimeout(markTimer);
+      p.rowEl.classList.remove('rolling');
+    },
+  };
+}
+
+
+/* =====================================================================
+   7) VIDEO-MODUS
+   ===================================================================== */
+let inVideo = false;
+
+/* Zustand des aktuellen Durchlaufs */
+const run = {
+  state: 'idle',  // idle | running | pausing | waitingTap | done
+  rows: [],       // die Zeilen im Video
+  index: -1,      // welche Zeile gerade dran ist
+  current: null,  // laufende Animation
+  timer: 0,
+  lastLand: 0,
+};
+
+/** Setzt die Farb- und Schrift-Variablen auf ein Element. */
+function applyThemeVars(el) {
+  const t = THEMES[settings.theme] || THEMES.creme;
+  el.style.setProperty('--v-bg', t.bg);
+  el.style.setProperty('--v-text', t.text);
+  el.style.setProperty('--v-marker', t.marker);
+  el.style.setProperty('--v-font', FONTS[settings.fontFamily] || FONTS.modern);
+}
+
+/** Alle Kategorien, die mindestens eine Option haben. */
+function playableCategories() {
+  return settings.categories
+    .map((cat) => ({ cat, opts: validOptions(cat) }))
+    .filter((x) => x.opts.length > 0);
+}
+
+function enterVideo() {
+  const list = playableCategories();
+  if (!list.length) {
+    toast(tr('needCategory'));
+    return;
+  }
+  Sound.unlock();
+  stopPreview();
+  saveNow();
+
+  const video = $('#video');
+  applyThemeVars(video);
+  video.dataset.pos = settings.position;
+  video.dataset.mirror = settings.mirror ? '1' : '0';
+  $('#safeFrame').hidden = !settings.showSafeFrame;
+  $('#startBtn').textContent = settings.startText.trim() || DEFAULT_TEXTS[settings.lang].startText;
+  $('#againBtn').textContent = settings.againText.trim() || DEFAULT_TEXTS[settings.lang].againText;
+
+  const title = $('#vTitle');
+  title.textContent = settings.title.trim();
+  title.hidden = !(settings.showTitle && settings.title.trim());
+
+  buildRows(list);
+
+  // Seite umschalten
+  inVideo = true;
+  document.documentElement.classList.add('in-video');
+  $('#settings').hidden = true;
+  $('#bottomBar').hidden = true;
+  video.hidden = false;
+  setPageColor(THEMES[settings.theme].bg);
+  window.scrollTo(0, 0);
+
+  resetRun();
+  layoutVideo();
+  WakeLock.on();
+  if (settings.fullscreen) requestFullscreen();
+}
+
+function exitVideo() {
+  cancelRun();
+  inVideo = false;
+  WakeLock.off();
+  exitFullscreen();
+  $('#video').hidden = true;
+  $('#settings').hidden = false;
+  $('#bottomBar').hidden = false;
+  document.documentElement.classList.remove('in-video');
+  setPageColor(null);
+  if (Cloud.waiting) Cloud.pull(); // Änderungen vom anderen Gerät jetzt übernehmen
+}
+
+/** Passt die Farbe der Browser-Leisten (Safari) an.
+    color = null → zurück zu den Farben der Einstellungen. */
+function setPageColor(color) {
+  document.documentElement.style.background = color || '';
+  document.body.style.background = color || '';
+  const metaTag = $('#metaTheme');
+  if (metaTag) {
+    metaTag.setAttribute('content', color ||
+      getComputedStyle(document.documentElement).getPropertyValue('--s-bg').trim() || '#F3EEE6');
+  }
+}
+
+/** Baut die (noch unsichtbaren) Zeilen für das Video. */
+function buildRows(list) {
+  const rowsEl = $('#rows');
+  rowsEl.textContent = '';
+  run.rows = list.map(({ cat, opts }, i) => {
+    const isLast = i === list.length - 1;
+    const big = i === 0 || isLast;
+
+    const el = document.createElement('div');
+    el.className = 'row ' + (big ? 'big' : 'normal');
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'row-label';
+    labelEl.textContent = cat.name;
+    labelEl.hidden = !settings.showLabels;
+
+    const lineEl = document.createElement('div');
+    lineEl.className = 'row-line';
+    const textEl = document.createElement('span');
+    textEl.className = 'row-text';
+    const prefixEl = document.createElement('span');
+    prefixEl.className = 'row-prefix';
+    prefixEl.textContent = prefixText(cat);
+    const valueEl = document.createElement('span');
+    valueEl.className = 'row-value';
+
+    textEl.append(prefixEl, valueEl);
+    lineEl.append(textEl);
+    el.append(labelEl, lineEl);
+    rowsEl.append(el);
+
+    return { el, labelEl, lineEl, textEl, valueEl, cat, big, isLast,
+             prefix: prefixText(cat), texts: opts.map((o) => o.text), opts, finalIndex: 0 };
+  });
+}
+
+/**
+ * Berechnet die Schriftgrößen so, dass alles auf einen Bildschirm passt
+ * (kein Scrollen) – auch bei vielen Kategorien oder langen Texten.
+ */
+function layoutVideo() {
+  if (!inVideo || !run.rows.length) return;
+  const stage = $('#stage');
+  const W = stage.clientWidth;
+  const H = stage.clientHeight;
+  if (!W || !H) return;
+
+  const meas = $('#measure');
+  const measPre = $('#measurePre');
+  const measVal = $('#measureVal');
+  const maxW = W * 0.96;
+  const LINE = 1.2;   // muss zu .row-line passen
+  const LABEL = 1.35; // muss zu .row-label passen
+
+  // Grundgröße abhängig von der Bildschirmgröße und der gewählten Schriftgröße
+  const u = Math.min(W * 0.2, H * 0.14) * (FONT_SIZES[settings.fontSize] || 1);
+
+  // 1) Für jede Zeile: so groß wie gewünscht, aber nie breiter als die Bühne
+  meas.style.letterSpacing = '';
+  meas.style.textTransform = '';
+  const sizes = run.rows.map((r) => {
+    meas.style.fontWeight = r.big ? '700' : '500';
+    measPre.textContent = r.prefix;
+    let widest = 0;
+    r.texts.forEach((t) => {
+      measVal.textContent = t;
+      widest = Math.max(widest, meas.getBoundingClientRect().width);
+    });
+    const wanted = r.big ? u : u * 0.64;
+    const fitWidth = widest > 0 ? maxW / (widest / 100) : wanted;
+    return Math.min(wanted, fitWidth);
+  });
+
+  // 2) Titel (optional)
+  let titleSize = 0;
+  let titleGap = 0;
+  const titleEl = $('#vTitle');
+  if (!titleEl.hidden) {
+    measPre.textContent = '';
+    measVal.textContent = titleEl.textContent;
+    meas.style.fontWeight = '600';
+    meas.style.letterSpacing = '0.14em';
+    meas.style.textTransform = 'uppercase';
+    const tw = meas.getBoundingClientRect().width;
+    titleSize = Math.min(u * 0.34, tw > 0 ? maxW / (tw / 100) : u * 0.34);
+    titleGap = u * 0.55;
+    meas.style.letterSpacing = '';
+    meas.style.textTransform = '';
+  }
+
+  // 3) Gesamthöhe prüfen und bei Bedarf alles gleichmäßig verkleinern
+  const labelSize = u * 0.24;
+  const gap = u * 0.3;
+  let total = sizes.reduce((sum, s) => sum + s * LINE, 0) + gap * (run.rows.length - 1);
+  if (settings.showLabels) total += run.rows.length * labelSize * LABEL;
+  if (titleSize) total += titleSize * 1.3 + titleGap;
+  const k = Math.min(1, (H * 0.97) / total);
+
+  // 4) Anwenden
+  run.rows.forEach((r, i) => {
+    r.lineEl.style.fontSize = sizes[i] * k + 'px';
+    r.labelEl.style.fontSize = labelSize * k + 'px';
+    r.el.style.marginTop = i === 0 ? '0' : gap * k + 'px';
+  });
+  titleEl.style.fontSize = titleSize * k + 'px';
+  titleEl.style.marginBottom = titleGap * k + 'px';
+}
+
+/* Bei Drehen/Größenänderung neu berechnen */
+let layoutRaf = 0;
+function scheduleLayout() {
+  cancelAnimationFrame(layoutRaf);
+  layoutRaf = requestAnimationFrame(layoutVideo);
+}
+window.addEventListener('resize', scheduleLayout);
+window.addEventListener('orientationchange', () => setTimeout(scheduleLayout, 250));
+
+/* --- Ablauf: Start → Zeile für Zeile → Nochmal --- */
+function cancelRun() {
+  if (run.current) run.current.cancel();
+  run.current = null;
+  clearTimeout(run.timer);
+}
+
+function resetRun() {
+  cancelRun();
+  run.state = 'idle';
+  run.index = -1;
+  run.rows.forEach((r) => {
+    r.el.classList.remove('shown', 'marked', 'rolling');
+    r.valueEl.textContent = '';
+  });
+  $('#startBtn').classList.remove('gone');
+  const again = $('#againBtn');
+  again.classList.add('gone');
+  again.hidden = true;
+}
+
+function startRun() {
+  if (run.state !== 'idle') return;
+  Sound.unlock();
+  // Ergebnisse jetzt festlegen (fest oder zufällig)
+  run.rows.forEach((r) => { r.finalIndex = pickFinal(r.cat, r.opts); });
+  $('#startBtn').classList.add('gone');
+  startRow(0);
+}
+
+function startRow(i) {
+  const r = run.rows[i];
+  if (!r) return;
+  run.index = i;
+  run.state = 'running';
+  r.el.classList.add('shown');
+  run.current = rattle({
+    rowEl: r.el,
+    valueEl: r.valueEl,
+    popEl: r.textEl,
+    texts: r.texts,
+    finalIndex: r.finalIndex,
+    duration: r.cat.duration,
+    steps: r.cat.steps,
+    isFinale: r.isLast,
+    onDone: () => rowDone(i),
+  });
+}
+
+function rowDone(i) {
+  run.current = null;
+  run.lastLand = performance.now();
+  if (i >= run.rows.length - 1) {
+    // Alles fertig → nach kurzer Zeit „Nochmal" einblenden
+    run.state = 'done';
+    run.timer = setTimeout(showAgainButton, 1500);
+  } else if (settings.advanceMode === 'tap') {
+    run.state = 'waitingTap';  // wartet auf Tippen
+  } else {
+    run.state = 'pausing';
+    run.timer = setTimeout(() => startRow(i + 1), settings.pause * 1000);
+  }
+}
+
+function showAgainButton() {
+  const again = $('#againBtn');
+  again.hidden = false;
+  void again.offsetWidth; // damit das Einblenden animiert wird
+  again.classList.remove('gone');
+}
+
+/* Tippen irgendwo auf den Bildschirm (Modus „per Tippen") */
+$('#video').addEventListener('pointerdown', (e) => {
+  if (e.target.closest('button')) return;
+  if (run.state === 'waitingTap' && performance.now() - run.lastLand > 250) {
+    startRow(run.index + 1);
+  }
+});
+/* Kein Scrollen/Zoomen im Video-Modus */
+$('#video').addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+document.addEventListener('gesturestart', (e) => { if (inVideo) e.preventDefault(); });
+
+$('#startBtn').addEventListener('click', startRun);
+$('#againBtn').addEventListener('click', resetRun);
+$('#gear').addEventListener('click', exitVideo);
+
+/* Tastatur (praktisch am Computer): Leertaste = weiter, Esc = Einstellungen */
+document.addEventListener('keydown', (e) => {
+  if (!inVideo) return;
+  if (e.key === 'Escape') { exitVideo(); return; }
+  if (e.key === ' ' || e.key === 'Enter') {
+    e.preventDefault();
+    if (run.state === 'idle') startRun();
+    else if (run.state === 'waitingTap') startRow(run.index + 1);
+    else if (run.state === 'done' && !$('#againBtn').classList.contains('gone')) resetRun();
+  }
+});
+
+/* --- Bildschirm wach halten, solange der Video-Modus läuft --- */
+const WakeLock = {
+  lock: null,
+  wanted: false,
+  async on() {
+    this.wanted = true;
+    try {
+      if ('wakeLock' in navigator && !this.lock) {
+        this.lock = await navigator.wakeLock.request('screen');
+        this.lock.addEventListener('release', () => { this.lock = null; });
+      }
+    } catch (e) { /* nicht unterstützt – egal */ }
+  },
+  async off() {
+    this.wanted = false;
+    try { if (this.lock) await this.lock.release(); } catch (e) { /* egal */ }
+    this.lock = null;
+  },
+};
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && WakeLock.wanted) WakeLock.on();
+});
+
+/* --- Vollbild (iPad & Computer) --- */
+function requestFullscreen() {
+  const el = document.documentElement;
+  try {
+    if (el.requestFullscreen) {
+      const p = el.requestFullscreen({ navigationUI: 'hide' });
+      if (p && p.catch) p.catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  } catch (e) { /* nicht unterstützt – egal */ }
+}
+function exitFullscreen() {
+  try {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      const p = document.exitFullscreen();
+      if (p && p.catch) p.catch(() => {});
+    } else if (document.webkitFullscreenElement && document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  } catch (e) { /* egal */ }
+}
+
+
+/* =====================================================================
+   8) EINSTELLUNGS-MODUS: Bedienelemente
+   ===================================================================== */
+
+/* Werte über einen „Pfad" lesen/schreiben, z. B. "sound.volume" */
+const getPath = (obj, path) => path.split('.').reduce((o, key) => (o == null ? undefined : o[key]), obj);
+function setPath(obj, path, value) {
+  const keys = path.split('.');
+  const last = keys.pop();
+  keys.reduce((o, key) => o[key], obj)[last] = value;
+}
+
+/* Wie Werte neben Schiebereglern angezeigt werden */
+const OUTPUT_FORMAT = {
+  'pause': (v) => fmt1(v) + ' s',
+  'sound.volume': (v) => Math.round(v * 100) + (settings.lang === 'en' ? '%' : ' %'),
+};
+
+/** Farbschema-Knöpfe erzeugen */
+function buildThemeSwatches() {
+  const wrap = $('#themeSwatches');
+  Object.entries(THEMES).forEach(([key, theme]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.dataset.v = key;
+    b.innerHTML = '<span class="swatch-dot">Aa</span><span></span>';
+    const dot = b.firstChild;
+    dot.style.background = theme.bg;
+    dot.style.color = theme.text;
+    b.lastChild.dataset.i18n = 'theme_' + key; // Name kommt aus dem Wörterbuch
+    wrap.append(b);
+  });
+}
+
+/** Sound-Zeilen (Tick, Ding, Finale) erzeugen */
+function buildSoundRows() {
+  const wrap = $('#soundRows');
+  SOUND_TYPES.forEach(({ key }) => {
+    const row = document.createElement('div');
+    row.className = 'sound-row';
+    row.innerHTML = `
+      <div class="sound-head"><b data-i18n="snd_${key}"></b><small data-i18n="snd_${key}_desc"></small></div>
+      <div class="sound-ctrl">
+        <select data-setting="sound.${key}" data-i18n-aria="snd_${key}"></select>
+        <button type="button" class="btn" data-test="${key}">${ICON.play} <span data-i18n="test"></span></button>
+      </div>
+      <div class="sound-custom">
+        <label class="btn-link"><span data-i18n="ownFile"></span>
+          <input type="file" accept="audio/*,.mp3,.wav,.m4a,.aac" data-file="${key}" hidden>
+        </label>
+        <span class="custom-info" data-info="${key}"></span>
+        <button type="button" class="btn-link danger" data-remove="${key}" data-i18n="remove" hidden></button>
+      </div>`;
+    const select = $('select', row);
+    // Anzeigenamen der Varianten kommen aus dem Wörterbuch (var_klick, …)
+    SOUND_VARIANTS[key].forEach(([value]) => select.add(new Option(value, value)));
+    wrap.append(row);
+  });
+}
+
+/** Verbindet alle Elemente mit data-setting="…" mit den Einstellungen. */
+function bindGlobalControls() {
+  $$('[data-setting]').forEach((el) => {
+    const path = el.dataset.setting;
+    if (el.classList.contains('seg') || el.classList.contains('swatches')) {
+      el.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-v]');
+        if (!b) return;
+        if (path === 'lang') { switchLanguage(b.dataset.v); return; }
+        setPath(settings, path, b.dataset.v);
+        afterGlobalChange(path);
+      });
+    } else if (el.type === 'checkbox') {
+      el.addEventListener('change', () => { setPath(settings, path, el.checked); afterGlobalChange(path); });
+    } else if (el.type === 'range') {
+      el.addEventListener('input', () => { setPath(settings, path, parseFloat(el.value)); afterGlobalChange(path); });
+    } else if (el.tagName === 'SELECT') {
+      el.addEventListener('change', () => { setPath(settings, path, el.value); afterGlobalChange(path); });
+    } else {
+      el.addEventListener('input', () => { setPath(settings, path, el.value); afterGlobalChange(path); });
+    }
+  });
+}
+
+function afterGlobalChange(path) {
+  save();
+  syncGlobalControls();
+  if (path === 'sound.volume') Sound.applyVolume();
+  if (path === 'theme' || path === 'fontFamily') $$('.cat-preview').forEach(applyThemeVars);
+}
+
+/** Zeigt in allen Bedienelementen die aktuellen Werte an. */
+function syncGlobalControls() {
+  $$('[data-setting]').forEach((el) => {
+    const v = getPath(settings, el.dataset.setting);
+    if (el.classList.contains('seg') || el.classList.contains('swatches')) {
+      $$('button[data-v]', el).forEach((b) => {
+        const on = b.dataset.v === String(v);
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on);
+      });
+    } else if (el.type === 'checkbox') {
+      el.checked = !!v;
+    } else if (document.activeElement !== el) {
+      el.value = v;
+    }
+  });
+  $$('[data-out]').forEach((o) => {
+    const path = o.dataset.out;
+    o.textContent = OUTPUT_FORMAT[path](getPath(settings, path));
+  });
+  // Elemente nur unter einer Bedingung zeigen, z. B. data-show-if="advanceMode=auto"
+  $$('[data-show-if]').forEach((el) => {
+    const [path, wanted] = el.dataset.showIf.split('=');
+    const v = getPath(settings, path);
+    el.hidden = wanted === undefined ? !v : String(v) !== wanted;
+  });
+  $('#soundDetails').classList.toggle('is-muted', !settings.sound.enabled);
+  updateSoundUI();
+  updateSummaries();
+}
+
+/** Kurze Zusammenfassungen rechts in den Bereichs-Überschriften. */
+function updateSummaries() {
+  const n = settings.categories.length;
+  $('#catSum').textContent = n === 1 ? tr('catOne') : tr('catMany', { n });
+  $('#flowSum').textContent = tr(settings.advanceMode === 'tap' ? 'tap' : 'auto');
+  $('#lookSum').textContent = tr('theme_' + settings.theme) + (settings.mirror ? tr('mirrored') : '');
+  $('#soundSum').textContent = settings.sound.enabled
+    ? tr('soundOn', { v: OUTPUT_FORMAT['sound.volume'](settings.sound.volume) })
+    : tr('soundOff');
+  updatePresetStatus();
+}
+
+
+/* ---------------------------------------------------------------------
+   Kategorien
+   --------------------------------------------------------------------- */
+const openCats = new Set(); // welche Kategorien gerade aufgeklappt sind
+
+function findCat(id) {
+  return settings.categories.find((c) => c.id === id);
+}
+
+/** Kurzbeschreibung unter dem Kategorie-Namen */
+function catMetaText(cat, index) {
+  const opts = validOptions(cat);
+  if (!opts.length) return tr('metaNoOpts');
+  let res = tr('metaRandom');
+  if (cat.result !== 'random') {
+    const text = (cat.options[cat.result] || '').trim();
+    res = '📌 ' + (text || tr('empty'));
+  }
+  const finale = index === settings.categories.length - 1 && settings.categories.length > 1 ? tr('metaFinale') : '';
+  const count = opts.length === 1 ? tr('optOne') : tr('optMany', { n: opts.length });
+  return count + ' · ' + res + finale;
+}
+
+/** Füllt die Auswahl „Ergebnis am Ende" */
+function fillResultSelect(select, cat) {
+  select.textContent = '';
+  select.add(new Option(tr('resultRandom'), 'random'));
+  cat.options.forEach((text, i) => {
+    select.add(new Option(tr('resultFixed', { text: text.trim() || tr('empty') }), String(i)));
+  });
+  select.value = cat.result === 'random' ? 'random' : String(cat.result);
+}
+
+/** Baut die Karte einer Kategorie */
+function buildCatCard(cat, index) {
+  const total = settings.categories.length;
+  const isOpen = openCats.has(cat.id);
+  const el = document.createElement('div');
+  el.className = 'cat' + (isOpen ? ' open' : '');
+  el.dataset.id = cat.id;
+  el.innerHTML = `
+    <div class="cat-head">
+      <button type="button" class="cat-toggle" data-act="toggle" aria-expanded="${isOpen}">
+        <span class="cat-num">${index + 1}</span>
+        <span class="cat-titles"><span class="cat-title"></span><span class="cat-meta"></span></span>
+      </button>
+      <button type="button" class="icon-btn" data-act="up" aria-label="${tr('moveUp')}" ${index === 0 ? 'disabled' : ''}>${ICON.up}</button>
+      <button type="button" class="icon-btn" data-act="down" aria-label="${tr('moveDown')}" ${index === total - 1 ? 'disabled' : ''}>${ICON.down}</button>
+      <button type="button" class="icon-btn danger" data-act="delcat" aria-label="${tr('deleteCat')}">${ICON.trash}</button>
+    </div>
+    <div class="cat-body" ${isOpen ? '' : 'hidden'}>
+      <label class="field"><span>${tr('catName')}</span>
+        <input type="text" data-f="name" autocomplete="off" enterkeyhint="done"></label>
+      <label class="field"><span>${tr('prefixLabel')} <small>${tr('prefixSmall')}</small></span>
+        <input type="text" data-f="prefix" placeholder="${tr('prefixPh')}" autocomplete="off" enterkeyhint="done"></label>
+      <div class="field">
+        <span class="field-label">${tr('options')}</span>
+        <div class="opt-list"></div>
+        <button type="button" class="btn ghost" data-act="addopt">${tr('addOpt')}</button>
+      </div>
+      <label class="field"><span>${tr('resultLabel')}</span><select data-f="result"></select></label>
+      <div class="field">
+        <span class="field-label">${tr('animation')}</span>
+        <label class="range-row"><span>${tr('duration')}</span>
+          <input type="range" min="0.5" max="6" step="0.1" data-f="duration"><output data-o="duration"></output></label>
+        <label class="range-row"><span>${tr('steps')}</span>
+          <input type="range" min="4" max="50" step="1" data-f="steps"><output data-o="steps"></output></label>
+        <p class="hint">${tr('stepsHint')}</p>
+      </div>
+      <div class="cat-preview"><span class="pv-empty">${tr('preview')}</span></div>
+      <button type="button" class="btn wide" data-act="preview">${ICON.play} ${tr('testRow')}</button>
+    </div>`;
+
+  // Texte sicher einsetzen (als Text, nicht als HTML)
+  $('.cat-title', el).textContent = cat.name.trim() || tr('untitled');
+  $('.cat-meta', el).textContent = catMetaText(cat, index);
+  $('[data-f="name"]', el).value = cat.name;
+  $('[data-f="prefix"]', el).value = cat.prefix;
+  $('[data-f="duration"]', el).value = cat.duration;
+  $('[data-o="duration"]', el).textContent = fmt1(cat.duration) + ' s';
+  $('[data-f="steps"]', el).value = cat.steps;
+  $('[data-o="steps"]', el).textContent = cat.steps + '×';
+  fillResultSelect($('[data-f="result"]', el), cat);
+  applyThemeVars($('.cat-preview', el));
+
+  const list = $('.opt-list', el);
+  cat.options.forEach((text, i) => {
+    const row = document.createElement('div');
+    row.className = 'opt-row';
+    row.innerHTML = `<input type="text" data-opt="${i}" autocomplete="off" enterkeyhint="next" aria-label="${tr('optAria', { n: i + 1 })}">
+      <button type="button" class="icon-btn danger" data-act="delopt" data-i="${i}" aria-label="${tr('delOpt')}">${ICON.x}</button>`;
+    row.firstElementChild.value = text;
+    list.append(row);
+  });
+  return el;
+}
+
+function renderCategories() {
+  stopPreview();
+  const list = $('#catList');
+  list.textContent = '';
+  settings.categories.forEach((cat, i) => list.append(buildCatCard(cat, i)));
+  if (!settings.categories.length) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = tr('catNone');
+    list.append(p);
+  }
+  updateSummaries();
+}
+
+/** Aktualisiert Titel + Kurzbeschreibung einer Karte, ohne alles neu zu bauen. */
+function refreshCatHead(card, cat) {
+  const index = settings.categories.indexOf(cat);
+  $('.cat-title', card).textContent = cat.name.trim() || tr('untitled');
+  $('.cat-meta', card).textContent = catMetaText(cat, index);
+}
+
+/* Klicks innerhalb der Kategorien-Liste */
+$('#catList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  const card = btn.closest('.cat');
+  const id = card.dataset.id;
+  const idx = settings.categories.findIndex((c) => c.id === id);
+  const cat = settings.categories[idx];
+  if (!cat) return;
+
+  switch (btn.dataset.act) {
+    case 'toggle': {
+      const open = !openCats.has(id);
+      if (open) openCats.add(id); else openCats.delete(id);
+      card.classList.toggle('open', open);
+      $('.cat-body', card).hidden = !open;
+      btn.setAttribute('aria-expanded', open);
+      if (!open) stopPreview();
+      break;
+    }
+    case 'up':
+    case 'down': {
+      const to = btn.dataset.act === 'up' ? idx - 1 : idx + 1;
+      if (to < 0 || to >= settings.categories.length) return;
+      const [moved] = settings.categories.splice(idx, 1);
+      settings.categories.splice(to, 0, moved);
+      save();
+      renderCategories();
+      break;
+    }
+    case 'delcat':
+      deleteCategory(cat);
+      break;
+    case 'addopt':
+      addOption(cat);
+      break;
+    case 'delopt': {
+      const i = Number(btn.dataset.i);
+      cat.options.splice(i, 1);
+      // Feste Auswahl anpassen, damit sie weiterhin stimmt
+      if (cat.result !== 'random') {
+        if (cat.result === i) cat.result = 'random';
+        else if (cat.result > i) cat.result -= 1;
+      }
+      save();
+      renderCategories();
+      break;
+    }
+    case 'preview':
+      runPreview(card, cat, idx);
+      break;
+  }
+});
+
+async function deleteCategory(cat) {
+  const ok = await askConfirm(tr('deleteCatAsk', { name: cat.name.trim() || tr('untitled') }), tr('del'), true);
+  if (!ok) return;
+  const idx = settings.categories.indexOf(cat);
+  if (idx < 0) return;
+  settings.categories.splice(idx, 1);
+  openCats.delete(cat.id);
+  save();
+  renderCategories();
+  toast(tr('catDeleted'));
+}
+
+function addOption(cat) {
+  cat.options.push('');
+  save();
+  renderCategories();
+  const inputs = $$(`.cat[data-id="${cat.id}"] [data-opt]`);
+  if (inputs.length) inputs[inputs.length - 1].focus();
+}
+
+/* Tippen in Feldern der Kategorien */
+$('#catList').addEventListener('input', (e) => {
+  const t = e.target;
+  const card = t.closest('.cat');
+  if (!card) return;
+  const cat = findCat(card.dataset.id);
+  if (!cat) return;
+
+  if (t.dataset.f === 'name') {
+    cat.name = t.value;
+  } else if (t.dataset.f === 'prefix') {
+    cat.prefix = t.value;
+  } else if (t.dataset.f === 'duration') {
+    cat.duration = parseFloat(t.value);
+    $('[data-o="duration"]', card).textContent = fmt1(cat.duration) + ' s';
+  } else if (t.dataset.f === 'steps') {
+    cat.steps = parseInt(t.value, 10);
+    $('[data-o="steps"]', card).textContent = cat.steps + '×';
+  } else if (t.dataset.opt !== undefined) {
+    cat.options[Number(t.dataset.opt)] = t.value;
+    fillResultSelect($('[data-f="result"]', card), cat);
+  } else {
+    return;
+  }
+  refreshCatHead(card, cat);
+  save();
+});
+
+$('#catList').addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset.f !== 'result') return;
+  const card = t.closest('.cat');
+  const cat = findCat(card.dataset.id);
+  cat.result = t.value === 'random' ? 'random' : Number(t.value);
+  refreshCatHead(card, cat);
+  save();
+});
+
+/* Enter in der letzten Option → neue Option darunter */
+$('#catList').addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (e.key !== 'Enter' || t.dataset.opt === undefined) return;
+  e.preventDefault();
+  const cat = findCat(t.closest('.cat').dataset.id);
+  const i = Number(t.dataset.opt);
+  if (i === cat.options.length - 1) addOption(cat);
+  else {
+    const next = $(`.cat[data-id="${cat.id}"] [data-opt="${i + 1}"]`);
+    if (next) next.focus();
+  }
+});
+
+$('#addCat').addEventListener('click', () => {
+  const cat = makeCategory(tr('newCat'), '', ['Option 1', 'Option 2', 'Option 3'], 2.5, 18);
+  settings.categories.push(cat);
+  openCats.add(cat.id);
+  save();
+  renderCategories();
+  const input = $(`.cat[data-id="${cat.id}"] [data-f="name"]`);
+  if (input) {
+    input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    input.focus();
+    input.select();
+  }
+});
+
+/* Vorschau einer einzelnen Zeile direkt in den Einstellungen */
+let preview = null;
+function stopPreview() {
+  if (preview) preview.cancel();
+  preview = null;
+}
+function runPreview(card, cat, index) {
+  Sound.unlock();
+  stopPreview();
+  const opts = validOptions(cat);
+  const box = $('.cat-preview', card);
+  if (!opts.length) {
+    box.innerHTML = '<span class="pv-empty"></span>';
+    $('.pv-empty', box).textContent = tr('noOptions');
+    return;
+  }
+  applyThemeVars(box);
+  box.innerHTML = '<span class="row-text"><span class="row-prefix"></span><span class="row-value"></span></span>';
+  $('.row-prefix', box).textContent = prefixText(cat);
+  const isFinale = index === settings.categories.length - 1;
+  preview = rattle({
+    rowEl: box,
+    valueEl: $('.row-value', box),
+    popEl: $('.row-text', box),
+    texts: opts.map((o) => o.text),
+    finalIndex: pickFinal(cat, opts),
+    duration: cat.duration,
+    steps: cat.steps,
+    isFinale,
+    onDone: () => { preview = null; },
+  });
+}
+
+
+/* ---------------------------------------------------------------------
+   Sound-Einstellungen: Test-Knöpfe & eigene Dateien
+   --------------------------------------------------------------------- */
+function updateSoundUI() {
+  SOUND_TYPES.forEach(({ key }) => {
+    const c = Sound.custom[key];
+    const info = $(`[data-info="${key}"]`);
+    const removeBtn = $(`[data-remove="${key}"]`);
+    const select = $(`select[data-setting="sound.${key}"]`);
+    if (!info) return;
+    info.textContent = c ? '🎵 ' + c.name + (c.sessionOnly ? tr('sessionOnly') : '') : '';
+    removeBtn.hidden = !c;
+    select.disabled = !!c;
+  });
+}
+
+$('#soundRows').addEventListener('click', (e) => {
+  const test = e.target.closest('[data-test]');
+  const remove = e.target.closest('[data-remove]');
+  if (test) {
+    Sound.unlock();
+    const type = test.dataset.test;
+    if (type === 'tick') {
+      // Mehrere Ticks, die langsamer werden – so hört man den Effekt
+      buildTimes(10, 1100).forEach((t) => setTimeout(() => Sound.play('tick', true), t));
+    } else {
+      Sound.play(type, true);
+    }
+  }
+  if (remove) {
+    Sound.removeCustom(remove.dataset.remove);
+    updateSoundUI();
+    toast(tr('soundRemoved'));
+  }
+});
+
+$('#soundRows').addEventListener('change', async (e) => {
+  const input = e.target.closest('input[type="file"]');
+  if (!input) return;
+  const type = input.dataset.file;
+  const file = input.files && input.files[0];
+  input.value = ''; // damit dieselbe Datei später erneut gewählt werden kann
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { toast(tr('fileTooBig')); return; }
+
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const ctx = Sound.ensure();
+    if (!ctx) { toast(tr('noAudio')); return; }
+    const buffer = await decodeAudio(ctx, dataUrlToArrayBuffer(dataUrl));
+    const stored = Store.set(KEYS.sound(type), { name: file.name, dataUrl });
+    Sound.custom[type] = { name: file.name, dataUrl, buffer, sessionOnly: !stored };
+    updateSoundUI();
+    toast(tr(stored ? 'soundSaved' : 'soundSession'));
+  } catch (err) {
+    toast(tr('soundBad'));
+  }
+});
+
+
+/* =====================================================================
+   9) PRESETS (gespeicherte Einstellungen unter einem Namen)
+   ===================================================================== */
+let presets = loadPresets();
+let activePreset = Store.get(KEYS.active, null);
+
+function loadPresets() {
+  return cleanPresets(Store.get(KEYS.presets, []));
+}
+function cleanPresets(list) {
+  return Array.isArray(list)
+    ? list.filter((p) => p && typeof p.name === 'string' && p.settings && typeof p.settings === 'object')
+    : [];
+}
+function savePresets() {
+  meta.presetsAt = Date.now();
+  const ok = Store.set(KEYS.presets, presets) && Store.set(KEYS.meta, meta);
+  if (!ok) toast(tr('presetSaveFail'));
+  Cloud.push('presets');
+}
+function setActivePreset(name) {
+  activePreset = name;
+  if (name) Store.set(KEYS.active, name); else Store.remove(KEYS.active);
+}
+
+/** Gibt es Änderungen, die noch in keinem Preset gespeichert sind? */
+function hasUnsavedChanges() {
+  const current = JSON.stringify(settings);
+  const p = presets.find((x) => x.name === activePreset);
+  if (p && JSON.stringify(normalizeSettings(deepCopy(p.settings))) === current) return false;
+  const def = defaultSettings(settings.lang);
+  // Standardwerte gelten nicht als „ungespeichert" (IDs ignorieren)
+  const strip = (s) => JSON.stringify({ ...s, categories: s.categories.map(({ id, ...rest }) => rest) });
+  return strip(settings) !== strip(def);
+}
+
+function updatePresetStatus() {
+  const el = $('#presetActive');
+  if (!el) return;
+  const p = presets.find((x) => x.name === activePreset);
+  if (p) {
+    const changed = JSON.stringify(normalizeSettings(deepCopy(p.settings))) !== JSON.stringify(settings);
+    el.textContent = tr('presetLoaded', { name: p.name }) + (changed ? tr('presetChanged') : '');
+    $('#presetSum').textContent = p.name + (changed ? ' *' : '');
+  } else {
+    el.textContent = tr('presetIntro');
+    $('#presetSum').textContent = presets.length ? tr('presetCount', { n: presets.length }) : '';
+  }
+}
+
+function renderPresets() {
+  const ul = $('#presetList');
+  ul.textContent = '';
+  presets.forEach((p, i) => {
+    const li = document.createElement('li');
+    const date = new Date(p.savedAt || Date.now());
+    li.innerHTML = `
+      <span class="preset-name"><b></b><small></small></span>
+      <button type="button" class="btn" data-load="${i}">${tr('load')}</button>
+      <button type="button" class="btn danger" data-del="${i}" aria-label="${tr('presetDeleteAria')}">${ICON.trash}</button>`;
+    $('b', li).textContent = p.name;
+    if (p.name === activePreset) {
+      const badge = document.createElement('span');
+      badge.className = 'active-badge';
+      badge.textContent = tr('active');
+      $('b', li).append(badge);
+    }
+    const en = settings.lang === 'en';
+    $('small', li).textContent = tr('savedAt', {
+      date: en ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : date.toLocaleDateString('de-DE'),
+      time: date.toLocaleTimeString(en ? 'en-US' : 'de-DE', { hour: '2-digit', minute: '2-digit' }),
+    });
+    ul.append(li);
+  });
+  $('#presetEmpty').hidden = presets.length > 0;
+  updatePresetStatus();
+}
+
+$('#presetSave').addEventListener('click', async () => {
+  const input = $('#presetName');
+  const name = input.value.trim();
+  if (!name) { toast(tr('presetNeedName')); input.focus(); return; }
+  let existing = presets.findIndex((p) => p.name.toLowerCase() === name.toLowerCase());
+  if (existing >= 0 &&
+      !(await askConfirm(tr('presetOverwrite', { name: presets[existing].name }), tr('overwrite')))) return;
+  existing = presets.findIndex((p) => p.name.toLowerCase() === name.toLowerCase());
+
+  const entry = { name, settings: deepCopy(settings), savedAt: Date.now() };
+  if (existing >= 0) presets[existing] = entry; else presets.unshift(entry);
+  savePresets();
+  setActivePreset(name);
+  input.value = '';
+  input.blur();
+  renderPresets();
+  toast(tr('presetSaved', { name }));
+});
+$('#presetName').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); $('#presetSave').click(); }
+});
+
+$('#presetList').addEventListener('click', async (e) => {
+  const loadBtn = e.target.closest('[data-load]');
+  const delBtn = e.target.closest('[data-del]');
+  if (loadBtn) {
+    const p = presets[Number(loadBtn.dataset.load)];
+    if (!p) return;
+    if (p.name !== activePreset && hasUnsavedChanges() &&
+        !(await askConfirm(tr('presetLoadAsk', { name: p.name }), tr('load')))) return;
+    settings = normalizeSettings(deepCopy(p.settings));
+    setActivePreset(p.name);
+    openCats.clear();
+    save();
+    saveNow();
+    refreshAll();
+    toast(tr('presetLoadedToast', { name: p.name }));
+  }
+  if (delBtn) {
+    const p = presets[Number(delBtn.dataset.del)];
+    if (!p || !(await askConfirm(tr('presetDeleteAsk', { name: p.name }), tr('del'), true))) return;
+    const i = presets.indexOf(p);
+    if (i < 0) return;
+    presets.splice(i, 1);
+    if (p.name === activePreset) setActivePreset(null);
+    savePresets();
+    renderPresets();
+    toast(tr('presetDeleted'));
+  }
+});
+
+
+/* =====================================================================
+   10) ABGLEICH ZWISCHEN DEINEN GERÄTEN (iPhone ↔ iPad)
+       Funktioniert nur in der veröffentlichten Version auf claude.ai.
+       Öffnest du die Datei direkt, bleibt alles nur auf diesem Gerät.
+       Regel: Der zuletzt geänderte Stand gewinnt.
+   ===================================================================== */
+const Cloud = {
+  ready: false,
+  waiting: false,  // Abgleich steht aus, weil gerade der Video-Modus läuft
+  refs: {},        // { settings, presets } – je ein Dokument nur für dich
+  timers: {},
+  busy: {},
+  again: {},
+  warned: false,
+
+  async init() {
+    if (!window.claude || typeof window.claude.use !== 'function') return; // einzelne Datei
+    try {
+      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      const mine = db.collection('data/users/' + id); // privater Bereich, nur für dich
+      this.refs = { settings: mine.doc('settings'), presets: mine.doc('presets') };
+      this.ready = true;
+      await this.pull();
+    } catch (e) {
+      console.warn('Abgleich nicht verfügbar', e);
+    }
+  },
+
+  /** Holt den Stand vom anderen Gerät; der neuere Stand gewinnt. */
+  async pull() {
+    if (!this.ready) return;
+    if (inVideo) { this.waiting = true; return; } // nicht mitten beim Filmen umbauen
+    this.waiting = false;
+    try {
+      const [s, p] = await Promise.all([this.refs.settings.get(), this.refs.presets.get()]);
+      const remoteS = s.exists ? s.data() : null;
+      const remoteP = p.exists ? p.data() : null;
+      const remoteSAt = remoteS ? Number(remoteS.savedAt) || 0 : 0;
+      const remotePAt = remoteP ? Number(remoteP.savedAt) || 0 : 0;
+      let changed = false;
+
+      if (remoteS && remoteS.settings && remoteSAt > meta.settingsAt && !settingsDirty) {
+        settings = normalizeSettings(deepCopy(remoteS.settings));
+        meta.settingsAt = remoteSAt;
+        Store.set(KEYS.settings, settings);
+        changed = true;
+      } else if (meta.settingsAt > remoteSAt) {
+        this.push('settings', 0);
+      }
+
+      if (remoteP && Array.isArray(remoteP.presets) && remotePAt > meta.presetsAt) {
+        presets = cleanPresets(deepCopy(remoteP.presets));
+        meta.presetsAt = remotePAt;
+        Store.set(KEYS.presets, presets);
+        changed = true;
+      } else if (meta.presetsAt > remotePAt) {
+        this.push('presets', 0);
+      }
+
+      if (changed) {
+        Store.set(KEYS.meta, meta);
+        refreshAll();
+      }
+      this.note('syncOk');
+    } catch (e) {
+      this.note('syncFail');
+    }
+  },
+
+  /** Schickt eine Änderung (kurz verzögert) an deine anderen Geräte. */
+  push(kind, delay = 1200) {
+    if (!this.ready) return;
+    clearTimeout(this.timers[kind]);
+    this.timers[kind] = setTimeout(() => { this.timers[kind] = 0; this.write(kind); }, delay);
+  },
+
+  /** Ausstehende Änderungen sofort senden (z. B. beim Verlassen der App). */
+  flush() {
+    Object.keys(this.timers).forEach((kind) => {
+      if (this.timers[kind]) { clearTimeout(this.timers[kind]); this.timers[kind] = 0; this.write(kind); }
+    });
+  },
+
+  async write(kind, retried = false) {
+    if (!this.ready) return;
+    if (this.busy[kind]) { this.again[kind] = true; return; } // immer nur ein Schreibvorgang gleichzeitig
+    this.busy[kind] = true;
+    try {
+      const body = kind === 'settings'
+        ? { savedAt: meta.settingsAt, settings: deepCopy(settings) }
+        : { savedAt: meta.presetsAt, presets: deepCopy(presets) };
+      await this.refs[kind].set(body);
+    } catch (e) {
+      if (e && e.code === 'unavailable' && !retried) {
+        this.busy[kind] = false;
+        setTimeout(() => this.write(kind, true), 800 + Math.random() * 1200);
+        return;
+      }
+      if (!this.warned) {
+        this.warned = true;
+        toast(tr('syncWriteFail'));
+      }
+    } finally {
+      this.busy[kind] = false;
+    }
+    if (this.again[kind]) { this.again[kind] = false; this.write(kind); }
+  },
+
+  note(key) {
+    const el = $('#syncNote');
+    el.dataset.i18n = key;       // wird beim Sprachwechsel automatisch übersetzt
+    el.textContent = tr(key);
+    el.hidden = false;
+  },
+};
+
+/* App kommt wieder in den Vordergrund → neuesten Stand holen.
+   App geht in den Hintergrund → alles sofort speichern und senden. */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') Cloud.pull();
+  else { saveNow(); Cloud.flush(); }
+});
+window.addEventListener('pagehide', () => Cloud.flush());
+
+
+/* =====================================================================
+   11) ALLES ZURÜCKSETZEN & START
+   ===================================================================== */
+$('#resetAll').addEventListener('click', async () => {
+  const ok = await askConfirm(tr('resetAsk'), tr('resetBtn'), true);
+  if (!ok) return;
+  settings = defaultSettings(settings.lang);
+  SOUND_TYPES.forEach(({ key }) => Sound.removeCustom(key));
+  setActivePreset(null);
+  openCats.clear();
+  save();
+  saveNow();
+  refreshAll();
+  toast(tr('resetDone'));
+});
+
+$('#goVideo').addEventListener('click', enterVideo);
+
+/** Setzt alle Texte der Seite in der gewählten Sprache ein. */
+function applyLanguage() {
+  document.documentElement.lang = settings.lang;
+  $$('[data-i18n]').forEach((el) => { el.textContent = tr(el.dataset.i18n); });
+  $$('[data-i18n-html]').forEach((el) => { el.innerHTML = tr(el.dataset.i18nHtml); }); // nur eigene Texte aus I18N
+  $$('[data-i18n-ph]').forEach((el) => { el.placeholder = tr(el.dataset.i18nPh); });
+  $$('[data-i18n-aria]').forEach((el) => { el.setAttribute('aria-label', tr(el.dataset.i18nAria)); });
+  $$('#soundRows select option').forEach((o) => { o.textContent = tr('var_' + o.value); });
+}
+
+/** Übersetzt Standard-Texte und Standard-Kategorien von einer Sprache in
+    die andere. Was du selbst geschrieben hast, bleibt unverändert. */
+function translateDefaults(from, to) {
+  ['title', 'startText', 'againText'].forEach((k) => {
+    if (settings[k].trim() === DEFAULT_TEXTS[from][k]) settings[k] = DEFAULT_TEXTS[to][k];
+  });
+  const A = DEFAULT_CATS[from];
+  const B = DEFAULT_CATS[to];
+  settings.categories.forEach((cat) => {
+    if (cat.name.trim() === I18N[from].newCat) cat.name = I18N[to].newCat;
+    // Passende Standard-Kategorie finden: über den Namen, den Text davor
+    // oder (mind. 4 Optionen) wenn alle Optionen Standard-Optionen sind
+    let j = A.findIndex((d) => d.name === cat.name.trim());
+    if (j < 0) j = A.findIndex((d) => d.prefix && d.prefix === cat.prefix.trim());
+    if (j < 0) {
+      const filled = cat.options.map((o) => o.trim()).filter(Boolean);
+      j = A.findIndex((d) => filled.length >= 4 && filled.every((o) => d.options.includes(o)));
+    }
+    if (j < 0) return;
+    if (cat.name.trim() === A[j].name) cat.name = B[j].name;
+    if (cat.prefix.trim() === A[j].prefix) cat.prefix = B[j].prefix;
+    cat.options = cat.options.map((o) => {
+      const k = A[j].options.indexOf(o.trim());
+      return k >= 0 ? B[j].options[k] : o;
+    });
+  });
+}
+
+/** Wird beim Tippen auf DE / EN aufgerufen. */
+function switchLanguage(to) {
+  if (!I18N[to] || to === settings.lang) return;
+  const from = settings.lang;
+  settings.lang = to;
+  translateDefaults(from, to);
+  save();
+  refreshAll();
+  toast(tr('langSwitched'));
+}
+
+function refreshAll() {
+  applyLanguage();
+  syncGlobalControls();
+  renderCategories();
+  renderPresets();
+  Sound.applyVolume();
+}
+
+// Start: Bedienelemente aufbauen und mit den Einstellungen füllen
+buildThemeSwatches();
+buildSoundRows();
+bindGlobalControls();
+Sound.loadCustomsFromStorage();
+refreshAll();
+Cloud.init(); // Abgleich zwischen Geräten (nur in der veröffentlichten Version)
+</script>
+</body>
+</html>
